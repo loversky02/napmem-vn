@@ -11,6 +11,7 @@ from napmem.ablation import format_ablation, reward_ablation
 from napmem.eval import evaluate_all
 from napmem.llm import client_from_env
 from napmem.prompted import PromptedNavigator, answer_correct, quote_supports_answer
+from napmem.reward import napmem_reward
 from napmem.synthetic import build_synthetic_benchmark
 
 
@@ -75,6 +76,7 @@ def print_live(
 ) -> None:
     navigator = PromptedNavigator(client_from_env(model, verify_ssl=verify_ssl, timeout_s=timeout_s))
     total = correct = calls = unneeded = exact_fail = quote_fail = errors = 0
+    reward_with_u = reward_without_u = 0.0
     examples = bench.examples[:limit] if limit > 0 else bench.examples
     print("\nlive_prompted")
     print("-" * 55)
@@ -87,6 +89,9 @@ def print_live(
         correct += int(ok)
         errors += int(failed)
         calls += len(result.trace)
+        used_memory = bool(result.trace)
+        reward_with_u += napmem_reward(not failed, ok, used_memory, use_usage_bonus=True)
+        reward_without_u += napmem_reward(not failed, ok, used_memory, use_usage_bonus=False)
         if example.answer_mode == "exact_string" and not ok:
             exact_fail += 1
         if example.answer_mode == "exact_string" and not quote_ok:
@@ -104,7 +109,9 @@ def print_live(
         f"summary acc={correct / total:.2f} avg_calls={calls / total:.2f} "
         f"unnecessary={unneeded / max(1, sum(not e.requires_memory for e in examples)):.2f} "
         f"exact_fail={exact_fail / exact_n:.2f} quote_fail={quote_fail / exact_n:.2f} "
-        f"error_rate={errors / total:.2f}"
+        f"error_rate={errors / total:.2f} "
+        f"R+U={reward_with_u / total:.2f} R={reward_without_u / total:.2f} "
+        f"delta={(reward_with_u - reward_without_u) / total:.2f}"
     )
 
 

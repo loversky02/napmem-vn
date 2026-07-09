@@ -67,7 +67,8 @@ the next limited smoke showed a routing/layer failure. The current prompt fixes
 that with explicit first-tool routing and exact layer discipline: record-shaped
 questions answer from record text, raw-shaped questions from raw text, profile
 questions from `profile.md`, and topic questions from topic files. The live
-runner also reports backend errors per example instead of crashing the whole run.
+runner also reports backend errors per example and summarizes `R+U` vs `F+C`
+reward so prompted trajectories can be used in the U-term ablation.
 
 ## Portfolio Role
 

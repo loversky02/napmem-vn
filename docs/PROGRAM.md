@@ -93,7 +93,9 @@ discipline and per-example backend error handling:
 | q_profile_mira | 1 | 1 | 1 | almonds |
 
 Summary: accuracy 0.88, average calls 1.50, unnecessary memory calls 0.00,
-exact fail 0.00, quote fail 0.00, provider error rate 0.00.
+exact fail 0.00, quote fail 0.00, provider error rate 0.00. The live runner now
+also reports `R+U`, `F+C`, and `delta` so prompted trajectories can be folded
+into the reward-usage ablation.
 
 Good sign: first-tool routing and exact layer discipline repair the previous
 record/profile failures without causing non-memory tool spam. Remaining issue:
@@ -104,7 +106,7 @@ requests, so the runner now has `--live-timeout` and prints per-example errors.
 ## Immediate Next
 
 1. Run full 40-case prompted smoke with `--live-timeout` and collect provider error rate.
-2. Add generated-trajectory reward ablation for prompted runs, not just scripted policies.
+2. Run a prompted mixed memory/non-memory batch and compare `R+U` vs `F+C` on generated trajectories.
 3. Use the 40-case reward ablation as the first paper-forge honest finding.
 4. Connect AutoMem bridge output to prompted READ evaluation over real AutoMem traces.
 
