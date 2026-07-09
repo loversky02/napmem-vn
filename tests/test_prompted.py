@@ -26,6 +26,19 @@ def test_prompted_navigator_can_skip_memory_for_non_memory_question(tmp_path):
     assert result.trace == []
 
 
+def test_prompted_navigator_returns_backend_error(tmp_path):
+    bench = build_synthetic_benchmark(tmp_path)
+    example = next(ex for ex in bench.examples if ex.qid == "q_non_memory_math")
+
+    def fail(_messages):
+        raise TimeoutError("provider stalled")
+
+    result = PromptedNavigator(fail).answer(bench, example)
+
+    assert result.answer == ""
+    assert result.reason.startswith("backend error: TimeoutError")
+
+
 def test_exact_string_scoring_rejects_soft_generalization():
     assert not answer_correct("nuts", "almonds", "exact_string")
     assert not answer_correct("Jo prefers concise weekly summaries.", "crisp bullets", "exact_string")

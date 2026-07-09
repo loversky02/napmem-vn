@@ -20,6 +20,7 @@ def main() -> None:
     parser.add_argument("--live", action="store_true", help="Also run the prompted 9router navigator.")
     parser.add_argument("--model", default=None, help="Override NAPMEM_MODEL/AUTOMEM_MODEL for live mode.")
     parser.add_argument("--insecure-ssl", action="store_true", help="Disable SSL verification for live mode.")
+    parser.add_argument("--live-timeout", type=float, default=120.0, help="Per-request live LLM timeout in seconds.")
     parser.add_argument("--ablation", action="store_true", help="Print F+C+U vs F+C reward ablation.")
     parser.add_argument("--limit", type=int, default=0, help="Limit live prompted examples for quick smoke.")
     args = parser.parse_args()
@@ -31,7 +32,7 @@ def main() -> None:
             print("\nreward_ablation")
             print(format_ablation(reward_ablation(bench)))
         if args.live:
-            print_live(bench, args.model, not args.insecure_ssl, args.limit)
+            print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout)
         return
 
     with TemporaryDirectory() as tmp:
@@ -41,7 +42,7 @@ def main() -> None:
             print("\nreward_ablation")
             print(format_ablation(reward_ablation(bench)))
         if args.live:
-            print_live(bench, args.model, not args.insecure_ssl, args.limit)
+            print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout)
 
 
 def print_table(results: dict[str, dict[str, float]]) -> None:
@@ -65,18 +66,26 @@ def print_table(results: dict[str, dict[str, float]]) -> None:
         )
 
 
-def print_live(bench, model: str | None, verify_ssl: bool, limit: int = 0) -> None:
-    navigator = PromptedNavigator(client_from_env(model, verify_ssl=verify_ssl))
-    total = correct = calls = unneeded = exact_fail = quote_fail = 0
+def print_live(
+    bench,
+    model: str | None,
+    verify_ssl: bool,
+    limit: int = 0,
+    timeout_s: float = 120.0,
+) -> None:
+    navigator = PromptedNavigator(client_from_env(model, verify_ssl=verify_ssl, timeout_s=timeout_s))
+    total = correct = calls = unneeded = exact_fail = quote_fail = errors = 0
     examples = bench.examples[:limit] if limit > 0 else bench.examples
     print("\nlive_prompted")
     print("-" * 55)
     for example in examples:
         result = navigator.answer(bench, example)
+        failed = result.reason.startswith("backend error:")
         ok = answer_correct(result.answer, example.answer, example.answer_mode)
         quote_ok = quote_supports_answer(result.evidence_quote, example.answer, example.answer_mode)
         total += 1
         correct += int(ok)
+        errors += int(failed)
         calls += len(result.trace)
         if example.answer_mode == "exact_string" and not ok:
             exact_fail += 1
@@ -87,12 +96,15 @@ def print_live(bench, model: str | None, verify_ssl: bool, limit: int = 0) -> No
         print(
             f"{example.qid:<22} ok={int(ok)} calls={len(result.trace)} "
             f"quote_ok={int(quote_ok)} answer={result.answer!r} quote={result.evidence_quote!r}"
+            f"{' error=' + result.reason if failed else ''}",
+            flush=True,
         )
     exact_n = max(1, sum(e.answer_mode == "exact_string" for e in examples))
     print(
         f"summary acc={correct / total:.2f} avg_calls={calls / total:.2f} "
         f"unnecessary={unneeded / max(1, sum(not e.requires_memory for e in examples)):.2f} "
-        f"exact_fail={exact_fail / exact_n:.2f} quote_fail={quote_fail / exact_n:.2f}"
+        f"exact_fail={exact_fail / exact_n:.2f} quote_fail={quote_fail / exact_n:.2f} "
+        f"error_rate={errors / total:.2f}"
     )
 
 

@@ -42,9 +42,15 @@ class LLMConfig:
     temperature: float = 0.0
     max_tokens: int = 700
     verify_ssl: bool = True
+    timeout_s: float = 120.0
 
     @classmethod
-    def from_env(cls, model: str | None = None, verify_ssl: bool | None = None) -> "LLMConfig":
+    def from_env(
+        cls,
+        model: str | None = None,
+        verify_ssl: bool | None = None,
+        timeout_s: float | None = None,
+    ) -> "LLMConfig":
         load_dotenv(Path(__file__).resolve().parent)
         base_url = (
             os.environ.get("NINEROUTER_BASE_URL")
@@ -70,7 +76,15 @@ class LLMConfig:
             )
         if verify_ssl is None:
             verify_ssl = os.environ.get("NAPMEM_INSECURE_SSL", "").lower() not in {"1", "true", "yes"}
-        return cls(base_url=base_url, api_key=api_key, model=model_name, verify_ssl=verify_ssl)
+        if timeout_s is None:
+            timeout_s = float(os.environ.get("NAPMEM_HTTP_TIMEOUT", "120"))
+        return cls(
+            base_url=base_url,
+            api_key=api_key,
+            model=model_name,
+            verify_ssl=verify_ssl,
+            timeout_s=timeout_s,
+        )
 
 
 class LLMClient:
@@ -98,7 +112,8 @@ class LLMClient:
             context = None
             if not self.config.verify_ssl:
                 context = ssl._create_unverified_context()
-            with urllib.request.urlopen(req, timeout=120, context=context) as response:
+            timeout = float(overrides.get("timeout_s", self.config.timeout_s))
+            with urllib.request.urlopen(req, timeout=timeout, context=context) as response:
                 raw = response.read().decode("utf-8")
                 try:
                     payload = json.loads(raw)
@@ -134,8 +149,12 @@ def _parse_sse_content(raw: str) -> str:
 Backend = Callable[[list[dict[str, str]]], str]
 
 
-def client_from_env(model: str | None = None, verify_ssl: bool | None = None) -> Backend:
-    client = LLMClient(LLMConfig.from_env(model, verify_ssl))
+def client_from_env(
+    model: str | None = None,
+    verify_ssl: bool | None = None,
+    timeout_s: float | None = None,
+) -> Backend:
+    client = LLMClient(LLMConfig.from_env(model, verify_ssl, timeout_s))
     return lambda messages: client.complete(messages)
 
 

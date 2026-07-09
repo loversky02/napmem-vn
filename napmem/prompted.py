@@ -136,7 +136,16 @@ class PromptedNavigator:
         ]
         raw_steps: list[str] = []
         for _ in range(self.max_tool_turns + 1):
-            raw = self.backend(messages)
+            try:
+                raw = self.backend(messages)
+            except Exception as exc:
+                return PromptedResult(
+                    answer="",
+                    reason=f"backend error: {type(exc).__name__}: {exc}",
+                    evidence_quote="",
+                    trace=list(tools.trace),
+                    raw_steps=raw_steps,
+                )
             raw_steps.append(raw)
             try:
                 action = _json_from_text(raw)
