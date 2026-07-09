@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from napmem.ablation import format_ablation, reward_ablation
+from napmem.artifacts import write_offline_artifacts
 from napmem.eval import evaluate_all
 from napmem.llm import client_from_env
 from napmem.prompted import PromptedNavigator, answer_correct, quote_supports_answer
@@ -23,6 +24,7 @@ def main() -> None:
     parser.add_argument("--insecure-ssl", action="store_true", help="Disable SSL verification for live mode.")
     parser.add_argument("--live-timeout", type=float, default=120.0, help="Per-request live LLM timeout in seconds.")
     parser.add_argument("--ablation", action="store_true", help="Print F+C+U vs F+C reward ablation.")
+    parser.add_argument("--artifacts", type=Path, default=None, help="Write offline JSON/Markdown artifacts here.")
     parser.add_argument("--limit", type=int, default=0, help="Limit live prompted examples for quick smoke.")
     parser.add_argument("--qids", default="", help="Comma-separated live qids to run instead of the default order.")
     args = parser.parse_args()
@@ -33,6 +35,9 @@ def main() -> None:
         if args.ablation:
             print("\nreward_ablation")
             print(format_ablation(reward_ablation(bench)))
+        if args.artifacts:
+            json_path, md_path = write_offline_artifacts(bench, args.artifacts)
+            print(f"\nwrote artifacts: {json_path} {md_path}")
         if args.live:
             print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout, args.qids)
         return
@@ -43,6 +48,9 @@ def main() -> None:
         if args.ablation:
             print("\nreward_ablation")
             print(format_ablation(reward_ablation(bench)))
+        if args.artifacts:
+            json_path, md_path = write_offline_artifacts(bench, args.artifacts)
+            print(f"\nwrote artifacts: {json_path} {md_path}")
         if args.live:
             print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout, args.qids)
 

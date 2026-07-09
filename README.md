@@ -32,6 +32,7 @@ Reward:
 ../automem-vn/.venv/bin/python -m pytest -q
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --ablation
+../automem-vn/.venv/bin/python scripts/run_synthetic.py --ablation --artifacts results
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --limit 8 --insecure-ssl --live-timeout 35
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_non_memory_math,q_non_memory_capital
 ```
@@ -75,6 +76,12 @@ On a mixed prompted batch with two memory and two non-memory questions, the
 navigator answered all four correctly and skipped memory for both non-memory
 items, but the paper-style `R+U` score dropped to 0.50 while `F+C` stayed 1.00.
 That is the cleanest local evidence so far that U must be ablated.
+
+Versioned artifacts:
+
+- [`results/offline_synthetic.md`](results/offline_synthetic.md)
+- [`results/offline_synthetic.json`](results/offline_synthetic.json)
+- [`docs/FINDING_USAGE_BONUS.md`](docs/FINDING_USAGE_BONUS.md)
 
 ## Portfolio Role
 

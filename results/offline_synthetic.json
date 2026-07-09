@@ -1,0 +1,150 @@
+{
+  "benchmark": {
+    "layers": [
+      "raw",
+      "record",
+      "topic",
+      "profile",
+      "non_memory"
+    ],
+    "name": "napmem-vn synthetic",
+    "num_examples": 40
+  },
+  "finding": {
+    "oracle_delta": -0.19999999999999996,
+    "passive_topk_delta": 0.30000000000000004,
+    "summary": "The paper-style F+C+U reward gives no usage credit when the agent correctly answers non-memory questions without calling memory. In the synthetic oracle, F+C+U is lower than F+C despite perfect accuracy.",
+    "title": "Usage bonus can penalize correct memory skipping"
+  },
+  "generated_on": "2026-07-09",
+  "results": {
+    "drilldown": {
+      "accuracy": 0.7,
+      "avg_tool_calls": 4.125,
+      "evidence_hit": 0.7,
+      "exact_fail_rate": 0.2,
+      "memory_accuracy": 0.625,
+      "memory_call_rate": 1.0,
+      "reward_with_u": 0.55,
+      "reward_without_u": 0.4,
+      "unnecessary_memory_call_rate": 1.0
+    },
+    "no_memory": {
+      "accuracy": 0.2,
+      "avg_tool_calls": 0.0,
+      "evidence_hit": 0.2,
+      "exact_fail_rate": 0.675,
+      "memory_accuracy": 0.0,
+      "memory_call_rate": 0.0,
+      "reward_with_u": -0.8,
+      "reward_without_u": -0.6,
+      "unnecessary_memory_call_rate": 0.0
+    },
+    "oracle": {
+      "accuracy": 1.0,
+      "avg_tool_calls": 0.8,
+      "evidence_hit": 1.0,
+      "exact_fail_rate": 0.0,
+      "memory_accuracy": 1.0,
+      "memory_call_rate": 0.8,
+      "reward_with_u": 0.8,
+      "reward_without_u": 1.0,
+      "unnecessary_memory_call_rate": 0.0
+    },
+    "passive_topk": {
+      "accuracy": 0.4,
+      "avg_tool_calls": 1.0,
+      "evidence_hit": 0.4,
+      "exact_fail_rate": 0.475,
+      "memory_accuracy": 0.25,
+      "memory_call_rate": 1.0,
+      "reward_with_u": 0.1,
+      "reward_without_u": -0.2,
+      "unnecessary_memory_call_rate": 1.0
+    },
+    "records_only": {
+      "accuracy": 0.4,
+      "avg_tool_calls": 2.0,
+      "evidence_hit": 0.4,
+      "exact_fail_rate": 0.475,
+      "memory_accuracy": 0.25,
+      "memory_call_rate": 1.0,
+      "reward_with_u": 0.1,
+      "reward_without_u": -0.2,
+      "unnecessary_memory_call_rate": 1.0
+    },
+    "upper_first": {
+      "accuracy": 0.6,
+      "avg_tool_calls": 9.0,
+      "evidence_hit": 0.6,
+      "exact_fail_rate": 0.4,
+      "memory_accuracy": 0.5,
+      "memory_call_rate": 1.0,
+      "reward_with_u": 0.4,
+      "reward_without_u": 0.2,
+      "unnecessary_memory_call_rate": 1.0
+    }
+  },
+  "reward_ablation": [
+    {
+      "accuracy": 0.2,
+      "avg_tool_calls": 0.0,
+      "exact_fail_rate": 0.675,
+      "reward_with_u": -0.8,
+      "reward_without_u": -0.6,
+      "strategy": "no_memory",
+      "unnecessary_memory_call_rate": 0.0,
+      "usage_bonus_delta": -0.20000000000000007
+    },
+    {
+      "accuracy": 0.4,
+      "avg_tool_calls": 1.0,
+      "exact_fail_rate": 0.475,
+      "reward_with_u": 0.1,
+      "reward_without_u": -0.2,
+      "strategy": "passive_topk",
+      "unnecessary_memory_call_rate": 1.0,
+      "usage_bonus_delta": 0.30000000000000004
+    },
+    {
+      "accuracy": 0.4,
+      "avg_tool_calls": 2.0,
+      "exact_fail_rate": 0.475,
+      "reward_with_u": 0.1,
+      "reward_without_u": -0.2,
+      "strategy": "records_only",
+      "unnecessary_memory_call_rate": 1.0,
+      "usage_bonus_delta": 0.30000000000000004
+    },
+    {
+      "accuracy": 0.6,
+      "avg_tool_calls": 9.0,
+      "exact_fail_rate": 0.4,
+      "reward_with_u": 0.4,
+      "reward_without_u": 0.2,
+      "strategy": "upper_first",
+      "unnecessary_memory_call_rate": 1.0,
+      "usage_bonus_delta": 0.2
+    },
+    {
+      "accuracy": 0.7,
+      "avg_tool_calls": 4.125,
+      "exact_fail_rate": 0.2,
+      "reward_with_u": 0.55,
+      "reward_without_u": 0.4,
+      "strategy": "drilldown",
+      "unnecessary_memory_call_rate": 1.0,
+      "usage_bonus_delta": 0.15000000000000002
+    },
+    {
+      "accuracy": 1.0,
+      "avg_tool_calls": 0.8,
+      "exact_fail_rate": 0.0,
+      "reward_with_u": 0.8,
+      "reward_without_u": 1.0,
+      "strategy": "oracle",
+      "unnecessary_memory_call_rate": 0.0,
+      "usage_bonus_delta": -0.19999999999999996
+    }
+  ]
+}

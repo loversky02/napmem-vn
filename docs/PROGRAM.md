@@ -70,6 +70,10 @@ Interpretation: the U term rewards every strategy that calls memory, including
 ones with 100% unnecessary calls on non-memory examples. The oracle is penalized
 because it correctly skips memory when memory is unnecessary.
 
+Versioned artifact: `results/offline_synthetic.md` and
+`results/offline_synthetic.json`. Standalone finding note:
+`docs/FINDING_USAGE_BONUS.md`.
+
 ## Current 9router Prompted Smoke
 
 Command:
