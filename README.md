@@ -1,0 +1,75 @@
+# NapMem-VN
+
+Mac-first reproduction lane for **From Passive Retrieval to Active Memory Navigation: Learning to Use Memory as a Structured Action Space** ([arXiv:2607.05794](https://arxiv.org/abs/2607.05794)).
+
+NapMem turns long-term user memory from passive top-k retrieval into an agent action space. This repo starts with the $0 substrate: a four-layer memory pyramid, the five paper tools, and the reward rubric needed to test navigation and reward-hacking ablations before any GPU GRPO run.
+
+## What Is Implemented
+
+| Layer | Local representation |
+|---|---|
+| L1 raw conversations | structured messages with ids, role, timestamp, session |
+| L2 memory records | typed fact/event/instruction/preference records with provenance |
+| L3 topic tracks | Markdown files with evidence links |
+| L4 user profile | `profile.md` |
+
+Five tools:
+
+- `search_records(query)`
+- `search_conversations(query)`
+- `get_records(record_ids)`
+- `get_conversation(message_ids)`
+- `read_file(name)`
+
+Reward:
+
+- paper `F + C + U` terminal reward
+- `use_usage_bonus=False` ablation to test whether the usage term teaches useful navigation or tool spam
+
+## Quickstart
+
+```bash
+../automem-vn/.venv/bin/python -m pytest -q
+../automem-vn/.venv/bin/python scripts/run_synthetic.py
+../automem-vn/.venv/bin/python scripts/run_synthetic.py --ablation
+../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --limit 6 --insecure-ssl
+```
+
+Current 40-case synthetic result:
+
+| strategy | acc | memory acc | exact fail | calls |
+|---|---:|---:|---:|---:|
+| no_memory | 0.20 | 0.00 | 0.68 | 0.00 |
+| passive_topk | 0.40 | 0.25 | 0.47 | 1.00 |
+| records_only | 0.40 | 0.25 | 0.47 | 2.00 |
+| upper_first | 0.60 | 0.50 | 0.40 | 9.00 |
+| drilldown | 0.70 | 0.62 | 0.20 | 4.12 |
+| oracle | 1.00 | 1.00 | 0.00 | 0.80 |
+
+This is intentionally tiny: it verifies that active navigation can recover evidence
+from raw messages, records, topic tracks, and profile before we spend tokens or GPU.
+It also includes non-memory controls, where unnecessary memory calls should be zero.
+
+Current 9router prompted smoke using the existing workspace endpoint on the first
+6 examples:
+
+| split | result |
+|---|---:|
+| accuracy | 0.67 |
+| avg calls | 1.17 |
+| unnecessary memory calls | 0.00 |
+| exact fail | 0.40 |
+| quote fail | 0.40 |
+
+The first live smoke failed by generalizing exact evidence. After scaling to 40,
+the current limited smoke shows a different failure: the model sometimes reads a
+topic file for record/profile-shaped questions. That is the next routing prompt
+fix before a full 40-case live run.
+
+## Portfolio Role
+
+This is the independent NapMem repro. The same substrate should also be used as:
+
+- AutoMem-VN READ half: pair active navigation with AutoMem's learned WRITE/consolidate skill.
+- super-agent axis: add `memory-granularity` beside `model × depth × skill-plan`.
+- HOLA comparison: external textual memory/tool navigation versus exact cache-style memory.

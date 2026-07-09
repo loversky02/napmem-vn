@@ -1,0 +1,11 @@
+[project]
+name = "napmem-vn"
+version = "0.1.0"
+description = "Mac-first NapMem reproduction: active navigation over a four-layer memory pyramid."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
