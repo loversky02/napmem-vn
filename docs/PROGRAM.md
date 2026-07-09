@@ -97,6 +97,18 @@ exact fail 0.00, quote fail 0.00, provider error rate 0.00. The live runner now
 also reports `R+U`, `F+C`, and `delta` so prompted trajectories can be folded
 into the reward-usage ablation.
 
+Mixed prompted U-term check:
+
+```bash
+../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_non_memory_math,q_non_memory_capital
+```
+
+Result: accuracy 1.00, average calls 1.00, unnecessary calls 0.00, provider
+error rate 0.00, `R+U=0.50`, `F+C=1.00`, `delta=-0.50`. The prompted navigator
+correctly skips memory for non-memory examples, but the paper-style usage term
+penalizes those correct skips. This is now an observed generated-trajectory
+finding, not just a scripted-policy artifact.
+
 Good sign: first-tool routing and exact layer discipline repair the previous
 record/profile failures without causing non-memory tool spam. Remaining issue:
 semantic topic answers can be stricter than humans would score, which is useful
@@ -106,8 +118,8 @@ requests, so the runner now has `--live-timeout` and prints per-example errors.
 ## Immediate Next
 
 1. Run full 40-case prompted smoke with `--live-timeout` and collect provider error rate.
-2. Run a prompted mixed memory/non-memory batch and compare `R+U` vs `F+C` on generated trajectories.
-3. Use the 40-case reward ablation as the first paper-forge honest finding.
+2. Run a larger prompted mixed batch and measure whether any model starts calling memory on non-memory examples to avoid the U penalty.
+3. Use the scripted + prompted U-term ablations as the first paper-forge honest finding.
 4. Connect AutoMem bridge output to prompted READ evaluation over real AutoMem traces.
 
 ## Open Risks

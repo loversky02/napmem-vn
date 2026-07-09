@@ -24,6 +24,7 @@ def main() -> None:
     parser.add_argument("--live-timeout", type=float, default=120.0, help="Per-request live LLM timeout in seconds.")
     parser.add_argument("--ablation", action="store_true", help="Print F+C+U vs F+C reward ablation.")
     parser.add_argument("--limit", type=int, default=0, help="Limit live prompted examples for quick smoke.")
+    parser.add_argument("--qids", default="", help="Comma-separated live qids to run instead of the default order.")
     args = parser.parse_args()
 
     if args.root:
@@ -33,7 +34,7 @@ def main() -> None:
             print("\nreward_ablation")
             print(format_ablation(reward_ablation(bench)))
         if args.live:
-            print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout)
+            print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout, args.qids)
         return
 
     with TemporaryDirectory() as tmp:
@@ -43,7 +44,7 @@ def main() -> None:
             print("\nreward_ablation")
             print(format_ablation(reward_ablation(bench)))
         if args.live:
-            print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout)
+            print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout, args.qids)
 
 
 def print_table(results: dict[str, dict[str, float]]) -> None:
@@ -73,11 +74,12 @@ def print_live(
     verify_ssl: bool,
     limit: int = 0,
     timeout_s: float = 120.0,
+    qids: str = "",
 ) -> None:
     navigator = PromptedNavigator(client_from_env(model, verify_ssl=verify_ssl, timeout_s=timeout_s))
     total = correct = calls = unneeded = exact_fail = quote_fail = errors = 0
     reward_with_u = reward_without_u = 0.0
-    examples = bench.examples[:limit] if limit > 0 else bench.examples
+    examples = select_live_examples(bench.examples, limit, qids)
     print("\nlive_prompted")
     print("-" * 55)
     for example in examples:
@@ -113,6 +115,17 @@ def print_live(
         f"R+U={reward_with_u / total:.2f} R={reward_without_u / total:.2f} "
         f"delta={(reward_with_u - reward_without_u) / total:.2f}"
     )
+
+
+def select_live_examples(examples, limit: int = 0, qids: str = ""):
+    wanted = [qid.strip() for qid in qids.split(",") if qid.strip()]
+    if wanted:
+        by_id = {example.qid: example for example in examples}
+        missing = [qid for qid in wanted if qid not in by_id]
+        if missing:
+            raise SystemExit(f"Unknown qids: {', '.join(missing)}")
+        return [by_id[qid] for qid in wanted]
+    return examples[:limit] if limit > 0 else examples
 
 
 if __name__ == "__main__":

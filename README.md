@@ -33,6 +33,7 @@ Reward:
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --ablation
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --limit 8 --insecure-ssl --live-timeout 35
+../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_non_memory_math,q_non_memory_capital
 ```
 
 Current 40-case synthetic result:
@@ -69,6 +70,11 @@ questions answer from record text, raw-shaped questions from raw text, profile
 questions from `profile.md`, and topic questions from topic files. The live
 runner also reports backend errors per example and summarizes `R+U` vs `F+C`
 reward so prompted trajectories can be used in the U-term ablation.
+
+On a mixed prompted batch with two memory and two non-memory questions, the
+navigator answered all four correctly and skipped memory for both non-memory
+items, but the paper-style `R+U` score dropped to 0.50 while `F+C` stayed 1.00.
+That is the cleanest local evidence so far that U must be ablated.
 
 ## Portfolio Role
 
