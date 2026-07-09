@@ -27,6 +27,7 @@ def main() -> None:
     parser.add_argument("--artifacts", type=Path, default=None, help="Write offline JSON/Markdown artifacts here.")
     parser.add_argument("--limit", type=int, default=0, help="Limit live prompted examples for quick smoke.")
     parser.add_argument("--qids", default="", help="Comma-separated live qids to run instead of the default order.")
+    parser.add_argument("--live-artifact-stem", default="", help="Filename stem for live artifacts.")
     args = parser.parse_args()
 
     if args.root:
@@ -39,7 +40,16 @@ def main() -> None:
             json_path, md_path = write_offline_artifacts(bench, args.artifacts)
             print(f"\nwrote artifacts: {json_path} {md_path}")
         if args.live:
-            print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout, args.qids, args.artifacts)
+            print_live(
+                bench,
+                args.model,
+                not args.insecure_ssl,
+                args.limit,
+                args.live_timeout,
+                args.qids,
+                args.artifacts,
+                args.live_artifact_stem,
+            )
         return
 
     with TemporaryDirectory() as tmp:
@@ -52,7 +62,16 @@ def main() -> None:
             json_path, md_path = write_offline_artifacts(bench, args.artifacts)
             print(f"\nwrote artifacts: {json_path} {md_path}")
         if args.live:
-            print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout, args.qids, args.artifacts)
+            print_live(
+                bench,
+                args.model,
+                not args.insecure_ssl,
+                args.limit,
+                args.live_timeout,
+                args.qids,
+                args.artifacts,
+                args.live_artifact_stem,
+            )
 
 
 def print_table(results: dict[str, dict[str, float]]) -> None:
@@ -84,6 +103,7 @@ def print_live(
     timeout_s: float = 120.0,
     qids: str = "",
     artifacts_dir: Path | None = None,
+    artifact_stem: str = "",
 ) -> None:
     navigator = PromptedNavigator(client_from_env(model, verify_ssl=verify_ssl, timeout_s=timeout_s))
     total = correct = calls = unneeded = exact_fail = quote_fail = errors = 0
@@ -153,7 +173,7 @@ def print_live(
         f"delta={summary['usage_bonus_delta']:.2f}"
     )
     if artifacts_dir:
-        stem = "live_prompted_mixed" if qids else "live_prompted"
+        stem = artifact_stem or ("live_prompted_mixed" if qids else "live_prompted")
         json_path, md_path = write_live_artifacts(rows, summary, artifacts_dir, live_selection(limit, qids), stem)
         print(f"wrote live artifacts: {json_path} {md_path}")
 

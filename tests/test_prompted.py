@@ -45,6 +45,11 @@ def test_exact_string_scoring_rejects_soft_generalization():
     assert quote_supports_answer("Please avoid almonds in snack suggestions.", "almonds", "exact_string")
 
 
+def test_exact_string_scoring_normalizes_unicode_digits():
+    assert answer_correct("H₂O", "H2O", "exact_string")
+    assert quote_supports_answer("The formula is H₂O.", "H2O", "exact_string")
+
+
 def test_route_hint_matches_memory_layer(tmp_path):
     bench = build_synthetic_benchmark(tmp_path)
     hints = {example.qid: route_hint(example) for example in bench.examples}

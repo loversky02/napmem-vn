@@ -35,6 +35,7 @@ Reward:
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --ablation --artifacts results
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --limit 8 --insecure-ssl --live-timeout 35
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_non_memory_math,q_non_memory_capital
+../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_topic_state,q_profile_nate,q_non_memory_math,q_non_memory_capital,q_non_memory_water,q_non_memory_week --artifacts results --live-artifact-stem live_prompted_mixed8
 ```
 
 Current 40-case synthetic result:
@@ -77,12 +78,17 @@ navigator answered all four correctly and skipped memory for both non-memory
 items, but the paper-style `R+U` score dropped to 0.50 while `F+C` stayed 1.00.
 That is the cleanest local evidence so far that U must be ablated.
 
+The larger mixed8 prompted batch repeats the same pattern: accuracy 1.00,
+unnecessary memory calls 0.00, `R+U=0.50`, `F+C=1.00`.
+
 Versioned artifacts:
 
 - [`results/offline_synthetic.md`](results/offline_synthetic.md)
 - [`results/offline_synthetic.json`](results/offline_synthetic.json)
 - [`results/live_prompted_mixed.md`](results/live_prompted_mixed.md)
 - [`results/live_prompted_mixed.json`](results/live_prompted_mixed.json)
+- [`results/live_prompted_mixed8.md`](results/live_prompted_mixed8.md)
+- [`results/live_prompted_mixed8.json`](results/live_prompted_mixed8.json)
 - [`docs/FINDING_USAGE_BONUS.md`](docs/FINDING_USAGE_BONUS.md)
 
 ## Portfolio Role
