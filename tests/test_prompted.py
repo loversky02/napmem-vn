@@ -50,6 +50,11 @@ def test_exact_string_scoring_normalizes_unicode_digits():
     assert quote_supports_answer("The formula is H₂O.", "H2O", "exact_string")
 
 
+def test_semantic_scoring_accepts_paraphrase_but_exact_stays_strict():
+    assert answer_correct("Research-plan answers should begin in Vietnamese.", "Vietnamese first", "semantic")
+    assert not answer_correct("Research-plan answers should begin in Vietnamese.", "Vietnamese first", "exact_string")
+
+
 def test_route_hint_matches_memory_layer(tmp_path):
     bench = build_synthetic_benchmark(tmp_path)
     hints = {example.qid: route_hint(example) for example in bench.examples}

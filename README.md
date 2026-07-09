@@ -36,6 +36,7 @@ Reward:
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --limit 8 --insecure-ssl --live-timeout 35
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_non_memory_math,q_non_memory_capital
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_topic_state,q_profile_nate,q_non_memory_math,q_non_memory_capital,q_non_memory_water,q_non_memory_week --artifacts results --live-artifact-stem live_prompted_mixed8
+../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_topic_state,q_profile_nate,q_raw_allergy,q_record_mira,q_topic_linh,q_profile_style,q_non_memory_math,q_non_memory_capital,q_non_memory_water,q_non_memory_week,q_non_memory_color,q_non_memory_planet,q_non_memory_square,q_non_memory_author --artifacts results --live-artifact-stem live_prompted_mixed16
 ```
 
 Current 40-case synthetic result:
@@ -81,6 +82,10 @@ That is the cleanest local evidence so far that U must be ablated.
 The larger mixed8 prompted batch repeats the same pattern: accuracy 1.00,
 unnecessary memory calls 0.00, `R+U=0.50`, `F+C=1.00`.
 
+The mixed16 batch repeats it again across 8 memory and 8 non-memory examples:
+accuracy 1.00, unnecessary memory calls 0.00, provider error rate 0.00,
+`R+U=0.50`, `F+C=1.00`.
+
 Versioned artifacts:
 
 - [`results/offline_synthetic.md`](results/offline_synthetic.md)
@@ -89,6 +94,8 @@ Versioned artifacts:
 - [`results/live_prompted_mixed.json`](results/live_prompted_mixed.json)
 - [`results/live_prompted_mixed8.md`](results/live_prompted_mixed8.md)
 - [`results/live_prompted_mixed8.json`](results/live_prompted_mixed8.json)
+- [`results/live_prompted_mixed16.md`](results/live_prompted_mixed16.md)
+- [`results/live_prompted_mixed16.json`](results/live_prompted_mixed16.json)
 - [`docs/FINDING_USAGE_BONUS.md`](docs/FINDING_USAGE_BONUS.md)
 
 ## Portfolio Role

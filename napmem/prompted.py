@@ -228,6 +228,19 @@ def _norm(text: str) -> str:
     return " ".join(text.translate(_UNICODE_DIGITS).strip().lower().split())
 
 
+def _semantic_tokens(text: str) -> set[str]:
+    tokens = set(_norm(text).replace("'", " ").replace("-", " ").split())
+    out: set[str] = set()
+    for token in tokens:
+        token = token.strip(".,;:!?()[]{}\"")
+        if not token or token in {"a", "an", "the", "and", "or", "to", "in", "for", "of"}:
+            continue
+        out.add(token)
+        if token.endswith("s") and len(token) > 3:
+            out.add(token[:-1])
+    return out
+
+
 def answer_correct(predicted: str, gold: str, answer_mode: str = "exact_string") -> bool:
     pred = _norm(predicted)
     target = _norm(gold)
@@ -235,7 +248,13 @@ def answer_correct(predicted: str, gold: str, answer_mode: str = "exact_string")
         return not pred
     if answer_mode == "exact_string":
         return pred == target or target in pred
-    return target in pred
+    if target in pred:
+        return True
+    target_tokens = _semantic_tokens(gold)
+    pred_tokens = _semantic_tokens(predicted)
+    if not target_tokens:
+        return False
+    return len(target_tokens & pred_tokens) / len(target_tokens) >= 0.5
 
 
 def quote_supports_answer(evidence_quote: str, gold: str, answer_mode: str = "exact_string") -> bool:

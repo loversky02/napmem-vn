@@ -29,6 +29,12 @@ examples: accuracy 1.00, unnecessary memory calls 0.00, provider error rate 0.00
 
 Versioned artifact: `results/live_prompted_mixed8.md/json`.
 
+Prompted mixed16 repeats it again with eight memory and eight non-memory
+examples: accuracy 1.00, unnecessary memory calls 0.00, provider error rate 0.00,
+`R+U=0.50`, `F+C=1.00`, delta `-0.50`.
+
+Versioned artifact: `results/live_prompted_mixed16.md/json`.
+
 ## Interpretation
 
 The usage bonus can improve exploration, but it should be an ablation axis rather
