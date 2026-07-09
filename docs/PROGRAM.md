@@ -83,25 +83,24 @@ discipline:
 
 | qid | ok | calls | quote ok | answer |
 |---|---:|---:|---:|---|
-| q_raw_nate | 1 | 1 | 1 | Tampa beach |
-| q_record_nate | 0 | 1 | 0 | Nate traveled to Tampa beach during a turtle trip |
+| q_raw_nate | 1 | 2 | 1 | Tampa beach |
+| q_record_nate | 1 | 2 | 1 | Nate visited Tampa beach on a turtle trip for peace and relaxation. |
 | q_topic_state | 1 | 1 | 1 | Florida |
-| q_profile_nate | 0 | 1 | 0 | turtle trip |
-| q_raw_allergy | 1 | 1 | 1 | almonds |
+| q_profile_nate | 1 | 1 | 1 | peaceful beach trips |
+| q_raw_allergy | 1 | 2 | 1 | almonds |
 | q_record_mira | 1 | 2 | 1 | throat irritation |
 
-Summary: accuracy 0.67, average calls 1.17, unnecessary memory calls 0.00,
-exact fail 0.40, quote fail 0.40.
+Summary: accuracy 1.00, average calls 1.67, unnecessary memory calls 0.00,
+exact fail 0.00, quote fail 0.00.
 
-Good sign: non-memory tool spam remains controlled and raw/record exact answers
-work when the model chooses the right layer. New failure: the live prompted model
-overuses topic files for record/profile-shaped questions, so the next prompt/policy
-needs stronger first-tool routing by question type.
+Good sign: first-tool routing and exact layer discipline repair the previous
+record/profile failures without causing non-memory tool spam. Cost: exact cases
+can spend an extra verification call.
 
 ## Immediate Next
 
-1. Improve prompted first-tool routing: exact record/profile questions should start with records/profile, not topic files.
-2. Run full 40-case prompted smoke after routing prompt is stable.
+1. Run full 40-case prompted smoke now that routing prompt is stable.
+2. Add generated-trajectory reward ablation for prompted runs, not just scripted policies.
 3. Use the 40-case reward ablation as the first paper-forge honest finding.
 4. Connect AutoMem bridge output to prompted READ evaluation over real AutoMem traces.
 

@@ -55,16 +55,17 @@ Current 9router prompted smoke using the existing workspace endpoint on the firs
 
 | split | result |
 |---|---:|
-| accuracy | 0.67 |
-| avg calls | 1.17 |
+| accuracy | 1.00 |
+| avg calls | 1.67 |
 | unnecessary memory calls | 0.00 |
-| exact fail | 0.40 |
-| quote fail | 0.40 |
+| exact fail | 0.00 |
+| quote fail | 0.00 |
 
 The first live smoke failed by generalizing exact evidence. After scaling to 40,
-the current limited smoke shows a different failure: the model sometimes reads a
-topic file for record/profile-shaped questions. That is the next routing prompt
-fix before a full 40-case live run.
+the next limited smoke showed a routing/layer failure. The current prompt fixes
+that with explicit first-tool routing and exact layer discipline: record-shaped
+questions answer from record text, raw-shaped questions from raw text, profile
+questions from `profile.md`, and topic questions from topic files.
 
 ## Portfolio Role
 

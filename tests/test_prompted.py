@@ -1,4 +1,4 @@
-from napmem.prompted import PromptedNavigator, answer_correct, quote_supports_answer
+from napmem.prompted import PromptedNavigator, answer_correct, quote_supports_answer, route_hint
 from napmem.synthetic import build_synthetic_benchmark
 
 
@@ -30,3 +30,13 @@ def test_exact_string_scoring_rejects_soft_generalization():
     assert not answer_correct("nuts", "almonds", "exact_string")
     assert not answer_correct("Jo prefers concise weekly summaries.", "crisp bullets", "exact_string")
     assert quote_supports_answer("Please avoid almonds in snack suggestions.", "almonds", "exact_string")
+
+
+def test_route_hint_matches_memory_layer(tmp_path):
+    bench = build_synthetic_benchmark(tmp_path)
+    hints = {example.qid: route_hint(example) for example in bench.examples}
+    assert "search_conversations" in hints["q_raw_nate"]
+    assert "search_records" in hints["q_record_nate"]
+    assert "profile.md" in hints["q_profile_nate"]
+    assert "topic file" in hints["q_topic_state"]
+    assert "do not call" in hints["q_non_memory_math"]

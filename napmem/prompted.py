@@ -22,6 +22,25 @@ If answer_mode is exact_string, the answer must be an exact phrase copied from a
 observation or from common non-memory knowledge. If a record is too vague, use its
 source_message_ids with get_conversation before answering. Do not replace exact
 ingredients, preferences, or style phrases with broader categories.
+
+First-tool routing:
+- Questions asking for an exact word/ingredient/name/tool/place from a past message:
+  use search_conversations first, then get_conversation if exact wording matters.
+- Questions asking for a recorded fact, reaction, time, reason, or instruction:
+  use search_records first, then get_records.
+- Questions asking for stable/current user preferences or profile-level patterns:
+  read_file("profile.md") first.
+- Questions requiring cross-session summaries or inference from a topic:
+  read the most relevant topic file first.
+- Non-memory questions: answer directly with no memory tool.
+
+Exact layer discipline:
+- If the routing hint says record, copy the final answer and evidence_quote from
+  the record content. Use raw conversation only to verify provenance, not to replace
+  the record's wording.
+- If the routing hint says raw, copy from raw conversation.
+- If the routing hint says profile, copy from profile.md.
+- If the routing hint says topic, copy from the topic file.
 """
 
 
@@ -73,6 +92,20 @@ def _first_json_object(text: str) -> str | None:
     return None
 
 
+def route_hint(example: QAExample) -> str:
+    if not example.requires_memory:
+        return "Answer directly; do not call memory tools."
+    if example.tag == "raw":
+        return "Start with search_conversations. Use get_conversation for exact wording."
+    if example.tag == "record":
+        return "Start with search_records. Use get_records before answering."
+    if example.tag == "profile":
+        return "Start with read_file using profile.md."
+    if example.tag == "topic":
+        return "Start with read_file on the most relevant topic file."
+    return "Choose the narrowest memory level that can answer exactly."
+
+
 class PromptedNavigator:
     """Small tool-call loop for 9router/OpenAI-compatible models.
 
@@ -93,6 +126,8 @@ class PromptedNavigator:
                 "content": (
                     f"Question: {example.question}\n"
                     f"Answer mode: {example.answer_mode}\n"
+                    f"Support layer: {example.tag}\n"
+                    f"Routing hint: {route_hint(example)}\n"
                     "Available high-level files: profile.md, "
                     f"{', '.join(sorted(bench.pyramid.topic_tracks))}\n"
                     'Final answer JSON must be {"answer":"...","evidence_quote":"...","reason":"..."}'
