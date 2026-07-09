@@ -39,6 +39,7 @@ Reward:
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_topic_state,q_profile_nate,q_raw_allergy,q_record_mira,q_topic_linh,q_profile_style,q_non_memory_math,q_non_memory_capital,q_non_memory_water,q_non_memory_week,q_non_memory_color,q_non_memory_planet,q_non_memory_square,q_non_memory_author --artifacts results --live-artifact-stem live_prompted_mixed16
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --artifacts results --live-artifact-stem live_prompted_full40
 ../automem-vn/.venv/bin/python scripts/export_grpo_data.py --out data/grpo_seed.jsonl
+../automem-vn/.venv/bin/python scripts/import_locomo_plus.py --limit 16 --out data/locomo_plus_subset.jsonl --report results/locomo_plus_subset.md --insecure-ssl
 ```
 
 Current 40-case synthetic result:
@@ -106,6 +107,9 @@ Versioned artifacts:
 - [`results/live_prompted_full40.json`](results/live_prompted_full40.json)
 - [`data/grpo_seed.jsonl`](data/grpo_seed.jsonl)
 - [`docs/GRPO_MINIRUN.md`](docs/GRPO_MINIRUN.md)
+- [`data/locomo_plus_subset.jsonl`](data/locomo_plus_subset.jsonl)
+- [`results/locomo_plus_subset.md`](results/locomo_plus_subset.md)
+- [`docs/BENCHMARK_SUBSETS.md`](docs/BENCHMARK_SUBSETS.md)
 - [`docs/FINDING_USAGE_BONUS.md`](docs/FINDING_USAGE_BONUS.md)
 
 ## Portfolio Role
