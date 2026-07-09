@@ -32,7 +32,7 @@ Reward:
 ../automem-vn/.venv/bin/python -m pytest -q
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py
 ../automem-vn/.venv/bin/python scripts/run_synthetic.py --ablation
-../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --limit 6 --insecure-ssl
+../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --limit 8 --insecure-ssl --live-timeout 35
 ```
 
 Current 40-case synthetic result:
@@ -51,21 +51,23 @@ from raw messages, records, topic tracks, and profile before we spend tokens or 
 It also includes non-memory controls, where unnecessary memory calls should be zero.
 
 Current 9router prompted smoke using the existing workspace endpoint on the first
-6 examples:
+8 examples:
 
 | split | result |
 |---|---:|
-| accuracy | 1.00 |
-| avg calls | 1.67 |
+| accuracy | 0.88 |
+| avg calls | 1.50 |
 | unnecessary memory calls | 0.00 |
 | exact fail | 0.00 |
 | quote fail | 0.00 |
+| provider error rate | 0.00 |
 
 The first live smoke failed by generalizing exact evidence. After scaling to 40,
 the next limited smoke showed a routing/layer failure. The current prompt fixes
 that with explicit first-tool routing and exact layer discipline: record-shaped
 questions answer from record text, raw-shaped questions from raw text, profile
-questions from `profile.md`, and topic questions from topic files.
+questions from `profile.md`, and topic questions from topic files. The live
+runner also reports backend errors per example instead of crashing the whole run.
 
 ## Portfolio Role
 

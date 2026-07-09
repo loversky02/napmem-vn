@@ -75,11 +75,11 @@ because it correctly skips memory when memory is unnecessary.
 Command:
 
 ```bash
-../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --limit 6 --insecure-ssl
+../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --limit 8 --insecure-ssl --live-timeout 35
 ```
 
 Result using the existing workspace 9router endpoint/model after exact-evidence
-discipline:
+discipline and per-example backend error handling:
 
 | qid | ok | calls | quote ok | answer |
 |---|---:|---:|---:|---|
@@ -89,17 +89,21 @@ discipline:
 | q_profile_nate | 1 | 1 | 1 | peaceful beach trips |
 | q_raw_allergy | 1 | 2 | 1 | almonds |
 | q_record_mira | 1 | 2 | 1 | throat irritation |
+| q_topic_mira | 0 | 1 | 1 | Mira avoids almonds in snack planning |
+| q_profile_mira | 1 | 1 | 1 | almonds |
 
-Summary: accuracy 1.00, average calls 1.67, unnecessary memory calls 0.00,
-exact fail 0.00, quote fail 0.00.
+Summary: accuracy 0.88, average calls 1.50, unnecessary memory calls 0.00,
+exact fail 0.00, quote fail 0.00, provider error rate 0.00.
 
 Good sign: first-tool routing and exact layer discipline repair the previous
-record/profile failures without causing non-memory tool spam. Cost: exact cases
-can spend an extra verification call.
+record/profile failures without causing non-memory tool spam. Remaining issue:
+semantic topic answers can be stricter than humans would score, which is useful
+pressure for the next evaluator pass. Full 40-case live can stall on provider
+requests, so the runner now has `--live-timeout` and prints per-example errors.
 
 ## Immediate Next
 
-1. Run full 40-case prompted smoke now that routing prompt is stable.
+1. Run full 40-case prompted smoke with `--live-timeout` and collect provider error rate.
 2. Add generated-trajectory reward ablation for prompted runs, not just scripted policies.
 3. Use the 40-case reward ablation as the first paper-forge honest finding.
 4. Connect AutoMem bridge output to prompted READ evaluation over real AutoMem traces.
