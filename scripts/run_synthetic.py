@@ -8,7 +8,7 @@ from tempfile import TemporaryDirectory
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from napmem.ablation import format_ablation, reward_ablation
-from napmem.artifacts import write_offline_artifacts
+from napmem.artifacts import write_live_artifacts, write_offline_artifacts
 from napmem.eval import evaluate_all
 from napmem.llm import client_from_env
 from napmem.prompted import PromptedNavigator, answer_correct, quote_supports_answer
@@ -39,7 +39,7 @@ def main() -> None:
             json_path, md_path = write_offline_artifacts(bench, args.artifacts)
             print(f"\nwrote artifacts: {json_path} {md_path}")
         if args.live:
-            print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout, args.qids)
+            print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout, args.qids, args.artifacts)
         return
 
     with TemporaryDirectory() as tmp:
@@ -52,7 +52,7 @@ def main() -> None:
             json_path, md_path = write_offline_artifacts(bench, args.artifacts)
             print(f"\nwrote artifacts: {json_path} {md_path}")
         if args.live:
-            print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout, args.qids)
+            print_live(bench, args.model, not args.insecure_ssl, args.limit, args.live_timeout, args.qids, args.artifacts)
 
 
 def print_table(results: dict[str, dict[str, float]]) -> None:
@@ -83,11 +83,13 @@ def print_live(
     limit: int = 0,
     timeout_s: float = 120.0,
     qids: str = "",
+    artifacts_dir: Path | None = None,
 ) -> None:
     navigator = PromptedNavigator(client_from_env(model, verify_ssl=verify_ssl, timeout_s=timeout_s))
     total = correct = calls = unneeded = exact_fail = quote_fail = errors = 0
     reward_with_u = reward_without_u = 0.0
     examples = select_live_examples(bench.examples, limit, qids)
+    rows = []
     print("\nlive_prompted")
     print("-" * 55)
     for example in examples:
@@ -108,6 +110,21 @@ def print_live(
             quote_fail += 1
         if not example.requires_memory and result.trace:
             unneeded += 1
+        rows.append({
+            "qid": example.qid,
+            "question": example.question,
+            "gold": example.answer,
+            "answer": result.answer,
+            "evidence_quote": result.evidence_quote,
+            "correct": ok,
+            "quote_ok": quote_ok,
+            "tool_calls": len(result.trace),
+            "memory_used": used_memory,
+            "requires_memory": example.requires_memory,
+            "answer_mode": example.answer_mode,
+            "reason": result.reason,
+            "backend_error": failed,
+        })
         print(
             f"{example.qid:<22} ok={int(ok)} calls={len(result.trace)} "
             f"quote_ok={int(quote_ok)} answer={result.answer!r} quote={result.evidence_quote!r}"
@@ -115,14 +132,30 @@ def print_live(
             flush=True,
         )
     exact_n = max(1, sum(e.answer_mode == "exact_string" for e in examples))
+    non_memory_n = max(1, sum(not e.requires_memory for e in examples))
+    summary = {
+        "accuracy": correct / total,
+        "avg_tool_calls": calls / total,
+        "unnecessary_memory_call_rate": unneeded / non_memory_n,
+        "exact_fail_rate": exact_fail / exact_n,
+        "quote_fail_rate": quote_fail / exact_n,
+        "error_rate": errors / total,
+        "reward_with_u": reward_with_u / total,
+        "reward_without_u": reward_without_u / total,
+        "usage_bonus_delta": (reward_with_u - reward_without_u) / total,
+    }
     print(
-        f"summary acc={correct / total:.2f} avg_calls={calls / total:.2f} "
-        f"unnecessary={unneeded / max(1, sum(not e.requires_memory for e in examples)):.2f} "
-        f"exact_fail={exact_fail / exact_n:.2f} quote_fail={quote_fail / exact_n:.2f} "
-        f"error_rate={errors / total:.2f} "
-        f"R+U={reward_with_u / total:.2f} R={reward_without_u / total:.2f} "
-        f"delta={(reward_with_u - reward_without_u) / total:.2f}"
+        f"summary acc={summary['accuracy']:.2f} avg_calls={summary['avg_tool_calls']:.2f} "
+        f"unnecessary={summary['unnecessary_memory_call_rate']:.2f} "
+        f"exact_fail={summary['exact_fail_rate']:.2f} quote_fail={summary['quote_fail_rate']:.2f} "
+        f"error_rate={summary['error_rate']:.2f} "
+        f"R+U={summary['reward_with_u']:.2f} R={summary['reward_without_u']:.2f} "
+        f"delta={summary['usage_bonus_delta']:.2f}"
     )
+    if artifacts_dir:
+        stem = "live_prompted_mixed" if qids else "live_prompted"
+        json_path, md_path = write_live_artifacts(rows, summary, artifacts_dir, live_selection(limit, qids), stem)
+        print(f"wrote live artifacts: {json_path} {md_path}")
 
 
 def select_live_examples(examples, limit: int = 0, qids: str = ""):
@@ -134,6 +167,15 @@ def select_live_examples(examples, limit: int = 0, qids: str = ""):
             raise SystemExit(f"Unknown qids: {', '.join(missing)}")
         return [by_id[qid] for qid in wanted]
     return examples[:limit] if limit > 0 else examples
+
+
+def live_selection(limit: int = 0, qids: str = "") -> str:
+    wanted = [qid.strip() for qid in qids.split(",") if qid.strip()]
+    if wanted:
+        return ",".join(wanted)
+    if limit > 0:
+        return f"first-{limit}"
+    return "all"
 
 
 if __name__ == "__main__":

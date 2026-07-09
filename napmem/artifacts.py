@@ -48,6 +48,48 @@ def write_offline_artifacts(bench: SyntheticBenchmark, out_dir: str | Path) -> t
     return json_path, md_path
 
 
+def build_live_report(
+    rows: list[dict[str, Any]],
+    summary: dict[str, float],
+    selection: str,
+) -> dict[str, Any]:
+    return {
+        "generated_on": date.today().isoformat(),
+        "benchmark": {
+            "name": "napmem-vn prompted synthetic",
+            "selection": selection,
+            "num_examples": len(rows),
+        },
+        "summary": summary,
+        "runs": rows,
+        "finding": {
+            "title": "Prompted trajectories expose the usage-bonus tradeoff",
+            "summary": (
+                "When prompted navigation correctly skips memory for non-memory "
+                "questions, F+C can exceed F+C+U because the usage term withholds "
+                "credit for correct no-memory answers."
+            ),
+        },
+    }
+
+
+def write_live_artifacts(
+    rows: list[dict[str, Any]],
+    summary: dict[str, float],
+    out_dir: str | Path,
+    selection: str,
+    stem: str = "live_prompted",
+) -> tuple[Path, Path]:
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    report = build_live_report(rows, summary, selection)
+    json_path = out / f"{stem}.json"
+    md_path = out / f"{stem}.md"
+    json_path.write_text(json.dumps(report, ensure_ascii=True, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    md_path.write_text(format_live_markdown(report), encoding="utf-8")
+    return json_path, md_path
+
+
 def format_offline_markdown(report: dict[str, Any]) -> str:
     rows = report["results"]
     ablation = report["reward_ablation"]
@@ -92,6 +134,50 @@ def format_offline_markdown(report: dict[str, Any]) -> str:
         "",
         f"Oracle delta: {report['finding']['oracle_delta']:.2f}",
         f"Passive top-k delta: {report['finding']['passive_topk_delta']:.2f}",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def format_live_markdown(report: dict[str, Any]) -> str:
+    summary = report["summary"]
+    lines = [
+        "# NapMem-VN Live Prompted Artifact",
+        "",
+        f"Generated: {report['generated_on']}",
+        f"Selection: {report['benchmark']['selection']}",
+        f"Examples: {report['benchmark']['num_examples']}",
+        "",
+        "## Summary",
+        "",
+        f"- Accuracy: {summary['accuracy']:.2f}",
+        f"- Average tool calls: {summary['avg_tool_calls']:.2f}",
+        f"- Unnecessary memory calls: {summary['unnecessary_memory_call_rate']:.2f}",
+        f"- Exact fail: {summary['exact_fail_rate']:.2f}",
+        f"- Quote fail: {summary['quote_fail_rate']:.2f}",
+        f"- Provider error rate: {summary['error_rate']:.2f}",
+        f"- R+U: {summary['reward_with_u']:.2f}",
+        f"- F+C: {summary['reward_without_u']:.2f}",
+        f"- Delta: {summary['usage_bonus_delta']:.2f}",
+        "",
+        "## Runs",
+        "",
+        "| qid | ok | calls | memory | quote ok | answer |",
+        "|---|---:|---:|---:|---:|---|",
+    ]
+    for row in report["runs"]:
+        answer = str(row["answer"]).replace("|", "\\|")
+        lines.append(
+            f"| {row['qid']} | {int(row['correct'])} | {row['tool_calls']} | "
+            f"{int(row['memory_used'])} | {int(row['quote_ok'])} | {answer} |"
+        )
+    lines += [
+        "",
+        "## Finding",
+        "",
+        f"**{report['finding']['title']}**",
+        "",
+        report["finding"]["summary"],
         "",
     ]
     return "\n".join(lines)

@@ -15,11 +15,13 @@ Scripted 40-case synthetic:
 Prompted 9router mixed batch:
 
 ```bash
-../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_non_memory_math,q_non_memory_capital
+../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_non_memory_math,q_non_memory_capital --artifacts results
 ```
 
 Result: accuracy 1.00, average calls 1.00, unnecessary memory calls 0.00,
 provider error rate 0.00, `R+U=0.50`, `F+C=1.00`, delta `-0.50`.
+
+Versioned artifact: `results/live_prompted_mixed.md/json`.
 
 ## Interpretation
 

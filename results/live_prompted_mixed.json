@@ -1,0 +1,85 @@
+{
+  "benchmark": {
+    "name": "napmem-vn prompted synthetic",
+    "num_examples": 4,
+    "selection": "q_raw_nate,q_record_nate,q_non_memory_math,q_non_memory_capital"
+  },
+  "finding": {
+    "summary": "When prompted navigation correctly skips memory for non-memory questions, F+C can exceed F+C+U because the usage term withholds credit for correct no-memory answers.",
+    "title": "Prompted trajectories expose the usage-bonus tradeoff"
+  },
+  "generated_on": "2026-07-09",
+  "runs": [
+    {
+      "answer": "Tampa beach",
+      "answer_mode": "exact_string",
+      "backend_error": false,
+      "correct": true,
+      "evidence_quote": "I visited Tampa beach on the turtle trip because I needed peace.",
+      "gold": "Tampa beach",
+      "memory_used": true,
+      "qid": "q_raw_nate",
+      "question": "Which exact beach did Nate visit on the turtle trip?",
+      "quote_ok": true,
+      "reason": "Direct exact wording from raw conversation message m_nate. The user explicitly stated the beach name as 'Tampa beach' in the context of the turtle trip.",
+      "requires_memory": true,
+      "tool_calls": 2
+    },
+    {
+      "answer": "Nate visited Tampa beach on a turtle trip for peace and relaxation.",
+      "answer_mode": "exact_string",
+      "backend_error": false,
+      "correct": true,
+      "evidence_quote": "Nate visited Tampa beach on a turtle trip for peace and relaxation.",
+      "gold": "peace and relaxation",
+      "memory_used": true,
+      "qid": "q_record_nate",
+      "question": "Why did Nate visit Tampa beach?",
+      "quote_ok": true,
+      "reason": "Record r_nate contains the exact documented reason for Nate's Tampa beach visit, retrieved via search_records and verified with get_records.",
+      "requires_memory": true,
+      "tool_calls": 2
+    },
+    {
+      "answer": "2 + 2 = 4",
+      "answer_mode": "semantic",
+      "backend_error": false,
+      "correct": true,
+      "evidence_quote": "This is basic arithmetic: 2 + 2 equals 4",
+      "gold": "4",
+      "memory_used": false,
+      "qid": "q_non_memory_math",
+      "question": "What is 2 + 2?",
+      "quote_ok": true,
+      "reason": "This is a fundamental mathematical fact that does not require memory tools or user context. No memory lookup needed.",
+      "requires_memory": false,
+      "tool_calls": 0
+    },
+    {
+      "answer": "Paris",
+      "answer_mode": "semantic",
+      "backend_error": false,
+      "correct": true,
+      "evidence_quote": "Paris is the capital and largest city of France.",
+      "gold": "Paris",
+      "memory_used": false,
+      "qid": "q_non_memory_capital",
+      "question": "What is the capital of France?",
+      "quote_ok": true,
+      "reason": "This is common knowledge not requiring memory tools. The question asks for a basic geographical fact with semantic answer mode, and the routing hint explicitly directs answering directly without calling memory tools.",
+      "requires_memory": false,
+      "tool_calls": 0
+    }
+  ],
+  "summary": {
+    "accuracy": 1.0,
+    "avg_tool_calls": 1.0,
+    "error_rate": 0.0,
+    "exact_fail_rate": 0.0,
+    "quote_fail_rate": 0.0,
+    "reward_with_u": 0.5,
+    "reward_without_u": 1.0,
+    "unnecessary_memory_call_rate": 0.0,
+    "usage_bonus_delta": -0.5
+  }
+}

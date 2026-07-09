@@ -81,6 +81,8 @@ Versioned artifacts:
 
 - [`results/offline_synthetic.md`](results/offline_synthetic.md)
 - [`results/offline_synthetic.json`](results/offline_synthetic.json)
+- [`results/live_prompted_mixed.md`](results/live_prompted_mixed.md)
+- [`results/live_prompted_mixed.json`](results/live_prompted_mixed.json)
 - [`docs/FINDING_USAGE_BONUS.md`](docs/FINDING_USAGE_BONUS.md)
 
 ## Portfolio Role
