@@ -1,12 +1,12 @@
 {
   "metrics": {
-    "label": "fcu",
+    "label": "fcu_sampled",
     "n": 40,
-    "accuracy": 0.875,
-    "memory_recall": 0.875,
+    "accuracy": 0.88125,
+    "memory_recall": 0.8671875,
     "malformed_rate": 0.0,
-    "memory_call_rate": 0.975,
-    "unnecessary_memory_call_rate": 0.875
+    "memory_call_rate": 0.94375,
+    "unnecessary_memory_call_rate": 0.78125
   },
   "samples": [
     {
@@ -22,7 +22,7 @@
       "qid": "q_record_nate",
       "requires_memory": true,
       "support_layer": "record",
-      "has_tool": 1.0,
+      "has_tool": 0.75,
       "malformed": 0.0,
       "correct": 1.0,
       "completion": "{\"answer\": \"Nate visited Tampa beach on a turtle trip for peace and relaxation.\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
@@ -33,7 +33,7 @@
       "support_layer": "topic",
       "has_tool": 1.0,
       "malformed": 0.0,
-      "correct": 0.0,
+      "correct": 0.125,
       "completion": "{\"answer\": \"Tampa\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
     },
     {
@@ -61,7 +61,7 @@
       "has_tool": 1.0,
       "malformed": 0.0,
       "correct": 1.0,
-      "completion": "{\"answer\": \"Mira gets throat irritation when exposed to the snack ingredient causing it.\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
+      "completion": "{\"answer\": \"Mira gets throat irritation from the snack ingredient that causes it.\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
     },
     {
       "qid": "q_topic_mira",
@@ -76,10 +76,10 @@
       "qid": "q_profile_mira",
       "requires_memory": true,
       "support_layer": "profile",
-      "has_tool": 1.0,
+      "has_tool": 0.875,
       "malformed": 0.0,
       "correct": 1.0,
-      "completion": "{\"answer\": \"Mira's snack suggestions should avoid almonds.\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
+      "completion": "{\"answer\": \"almonds\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
     },
     {
       "qid": "q_raw_linh",
@@ -87,8 +87,8 @@
       "support_layer": "raw",
       "has_tool": 1.0,
       "malformed": 0.0,
-      "correct": 1.0,
-      "completion": "{\"answer\": \"For work on research plans\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
+      "correct": 0.875,
+      "completion": "{\"answer\": \"For the work context of developing and discussing research plans.\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
     },
     {
       "qid": "q_record_instruction",
@@ -96,17 +96,17 @@
       "support_layer": "record",
       "has_tool": 1.0,
       "malformed": 0.0,
-      "correct": 0.0,
-      "completion": "{\"answer\": \"Linh\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
+      "correct": 0.75,
+      "completion": "{\"answer\": \"Linh in Vietnamese\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
     },
     {
       "qid": "q_topic_linh",
       "requires_memory": true,
       "support_layer": "topic",
-      "has_tool": 1.0,
+      "has_tool": 0.875,
       "malformed": 0.0,
-      "correct": 1.0,
-      "completion": "{\"answer\": \"Linh, your research-plan answers should begin in Vietnamese.\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
+      "correct": 0.375,
+      "completion": "{\"answer\": \"Linh n\u00ean b\u1eaft \u0111\u1ea7u b\u1eb1ng c\u00e2u tr\u1ea3 l\u1eddi nghi\u00ean c\u1ee9u trong ti\u1ebfng Vi\u1ec7t.\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
     },
     {
       "qid": "q_profile_linh",
@@ -142,7 +142,7 @@
       "has_tool": 1.0,
       "malformed": 0.0,
       "correct": 1.0,
-      "completion": "{\"answer\": \"Jo prefers crisp bullets in her weekly summaries.\", \"tool_calls\": [{\"tool\": \"search_records\", \"arguments\": {\"memory_id\": \"r_jo\"}}]}"
+      "completion": "{\"answer\": \"Jo's weekly summaries should be formatted with crisp bullets.\", \"tool_calls\": [{\"tool\": \"search_records\", \"arguments\": {\"memory_id\": \"r_jo\"}}]}"
     },
     {
       "qid": "q_profile_style",
@@ -160,7 +160,7 @@
       "has_tool": 1.0,
       "malformed": 0.0,
       "correct": 1.0,
-      "completion": "{\"answer\": \"my baby\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
+      "completion": "{\"answer\": \"the baby\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
     },
     {
       "qid": "q_record_ava",
@@ -178,7 +178,7 @@
       "has_tool": 1.0,
       "malformed": 0.0,
       "correct": 1.0,
-      "completion": "{\"answer\": \"Ava keeps notifications quiet after 11 pm because her baby sleeps during that time.\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
+      "completion": "{\"answer\": \"Ava keeps notifications quiet after 11 pm because the baby sleeps at that time.\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
     },
     {
       "qid": "q_profile_ava",
@@ -213,8 +213,8 @@
       "support_layer": "topic",
       "has_tool": 1.0,
       "malformed": 0.0,
-      "correct": 1.0,
-      "completion": "{\"answer\": \"Bao's BWP- invoices are for Build with Paper consulting projects.\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
+      "correct": 0.625,
+      "completion": "{\"answer\": \"BWP-\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
     },
     {
       "qid": "q_profile_bao",
@@ -286,7 +286,7 @@
       "has_tool": 1.0,
       "malformed": 0.0,
       "correct": 1.0,
-      "completion": "{\"answer\": \"Diego takes lab notes in Obsidian and then drafts final documents in Google Docs.\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
+      "completion": "{\"answer\": \"Diego takes lab notes in Obsidian and drafts final documents in Google Docs.\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
     },
     {
       "qid": "q_profile_diego",
@@ -328,7 +328,7 @@
       "qid": "q_non_memory_week",
       "requires_memory": false,
       "support_layer": "non_memory",
-      "has_tool": 1.0,
+      "has_tool": 0.75,
       "malformed": 0.0,
       "correct": 1.0,
       "completion": "{\"answer\": \"7\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
@@ -337,9 +337,9 @@
       "qid": "q_non_memory_color",
       "requires_memory": false,
       "support_layer": "non_memory",
-      "has_tool": 1.0,
+      "has_tool": 0.875,
       "malformed": 0.0,
-      "correct": 0.0,
+      "correct": 0.5,
       "completion": "{\"answer\": \"White\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"
     },
     {
@@ -355,7 +355,7 @@
       "qid": "q_non_memory_square",
       "requires_memory": false,
       "support_layer": "non_memory",
-      "has_tool": 1.0,
+      "has_tool": 0.625,
       "malformed": 0.0,
       "correct": 1.0,
       "completion": "{\"answer\": \"81\", \"tool_calls\": [{\"tool\": \"search_records\"}]}"

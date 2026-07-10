@@ -60,19 +60,23 @@ plot in `docs/GRPO_MINIRUN.md`.
 
 ## Confirmed on a trained model (RunPod, GRPO)
 
-The offline prediction holds after actually training. Same base
-(`Qwen/Qwen2.5-3B-Instruct` + LoRA), 100 GRPO steps, once with F+C+U and once with
-F+C (`results/grpo_money_plot.md`, RTX 3090, ~$0.55):
+The offline prediction holds — dramatically — after actually training. Same base
+(`Qwen/Qwen2.5-3B-Instruct` + LoRA), 100 GRPO steps, neutral prompt (no skip hint,
+so the tool decision is reward-driven), once with F+C+U and once with F+C
+(`results/grpo_money_plot.md`, A40, ~$0.5):
 
-| checkpoint | accuracy | memory-call rate |
-|---|---:|---:|
-| F+C+U | 0.85 | **0.80** |
-| F+C   | 0.85 | **0.65** |
+| checkpoint | accuracy | memory-call rate | unnecessary (non-memory) |
+|---|---:|---:|---:|
+| base | 0.85 | 0.15 | 0.00 |
+| F+C+U | 0.88 | **0.97** | **0.88** |
+| F+C   | 0.88 | **0.17** | **0.00** |
 
-The usage term trains the policy to call memory **15 points more** at identical
-accuracy — U buys tool-calling, not capability. (A 30-step / lr 1e-6 pass moved
-nothing; the effect needed 100 steps / lr 1e-5. The non-memory subset stayed at 0
-unnecessary calls for both, held by the explicit "needs no memory" instruction.)
+The usage term trains a **memory-spamming** policy — it calls memory on 97% of
+questions and 88% of *non-memory* questions unnecessarily — while the F+C ablation
+stays at base behaviour, at equal accuracy. U buys tool-calling, not capability.
+(Sampled eval n=8 agrees: 0.78 vs 0.00 unnecessary. An earlier pass with a "needs
+no memory" hint in the prompt masked the effect on the non-memory subset — the hint
+pinned the behaviour; removing it let the reward drive the policy.)
 
 ## Interpretation
 

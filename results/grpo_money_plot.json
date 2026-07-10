@@ -1,32 +1,58 @@
 {
   "model": "Qwen/Qwen2.5-3B-Instruct",
-  "steps": "30",
-  "base": {
-    "label": "base",
-    "n": 40,
-    "accuracy": 0.85,
-    "memory_recall": 0.84375,
-    "malformed_rate": 0.0,
-    "memory_call_rate": 0.625,
-    "unnecessary_memory_call_rate": 0.0
+  "steps": "100",
+  "lr": "1e-5",
+  "greedy": {
+    "base": {
+      "label": "base",
+      "n": 40,
+      "accuracy": 0.85,
+      "memory_recall": 0.84375,
+      "malformed_rate": 0.025,
+      "memory_call_rate": 0.15,
+      "unnecessary_memory_call_rate": 0.0
+    },
+    "fcu": {
+      "label": "fcu",
+      "n": 40,
+      "accuracy": 0.875,
+      "memory_recall": 0.875,
+      "malformed_rate": 0.0,
+      "memory_call_rate": 0.975,
+      "unnecessary_memory_call_rate": 0.875
+    },
+    "fc": {
+      "label": "fc",
+      "n": 40,
+      "accuracy": 0.875,
+      "memory_recall": 0.875,
+      "malformed_rate": 0.0,
+      "memory_call_rate": 0.175,
+      "unnecessary_memory_call_rate": 0.0
+    }
   },
-  "fcu": {
-    "label": "fcu",
-    "n": 40,
-    "accuracy": 0.85,
-    "memory_recall": 0.84375,
-    "malformed_rate": 0.0,
-    "memory_call_rate": 0.6,
-    "unnecessary_memory_call_rate": 0.0
+  "sampled": {
+    "fcu": {
+      "label": "fcu_sampled",
+      "n": 40,
+      "accuracy": 0.88125,
+      "memory_recall": 0.8671875,
+      "malformed_rate": 0.0,
+      "memory_call_rate": 0.94375,
+      "unnecessary_memory_call_rate": 0.78125
+    },
+    "fc": {
+      "label": "fc_sampled",
+      "n": 40,
+      "accuracy": 0.884375,
+      "memory_recall": 0.875,
+      "malformed_rate": 0.003125,
+      "memory_call_rate": 0.165625,
+      "unnecessary_memory_call_rate": 0.0
+    }
   },
-  "fc": {
-    "label": "fc",
-    "n": 40,
-    "accuracy": 0.85,
-    "memory_recall": 0.84375,
-    "malformed_rate": 0.0,
-    "memory_call_rate": 0.6,
-    "unnecessary_memory_call_rate": 0.0
-  },
-  "delta_unnecessary_fcu_minus_fc": 0.0
+  "greedy_delta_mem_call": 0.8,
+  "greedy_delta_unnecessary": 0.875,
+  "sampled_delta_mem_call": 0.778,
+  "sampled_delta_unnecessary": 0.781
 }

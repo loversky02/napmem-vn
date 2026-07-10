@@ -5,20 +5,23 @@ train the *same* base model twice — once with the paper reward **F+C+U** and o
 with the **F+C** ablation — and compare memory-call rate. Everything up to the GPU
 boundary is built and verified offline; only `train_grpo.py` needs a pod.
 
-## Result (done — RunPod RTX 3090, ~$0.55, `results/grpo_money_plot.md`)
+## Result (done — RunPod, ~$0.5, `results/grpo_money_plot.md`)
 
 `Qwen/Qwen2.5-3B-Instruct` + LoRA, 100 GRPO steps, lr 1e-5, single-turn with
-evidence-in-prompt:
+evidence-in-prompt and a **neutral** instruction (no skip hint), so the tool-call
+decision is reward-driven:
 
-| checkpoint | accuracy | memory recall | memory-call rate |
+| checkpoint | accuracy | memory-call rate | unnecessary (non-memory) |
 |---|---:|---:|---:|
-| F+C+U | 0.85 | 0.84 | **0.80** |
-| F+C   | 0.85 | 0.84 | **0.65** |
+| base | 0.85 | 0.15 | 0.00 |
+| **F+C+U** | 0.88 | **0.97** | **0.88** |
+| **F+C** | 0.88 | **0.17** | **0.00** |
 
-**U trains the policy to call memory 15 points more (0.80 vs 0.65) at identical
-accuracy**, confirming the offline prediction in a real trained model. (A first
-pass at 30 steps / lr 1e-6 gave a zero delta — too small an update; the effect
-appeared at 100 steps / lr 1e-5.) Full write-up + caveats: `results/grpo_money_plot.md`.
+**U trains a memory-spamming policy — it calls memory on 97% of questions, 88% of
+non-memory questions unnecessarily — while F+C stays at base behaviour, at equal
+accuracy.** Textbook reward hacking, confirming the offline prediction in a real
+trained model (sampled eval n=8 agrees: 0.78 vs 0.00 unnecessary). Full write-up:
+`results/grpo_money_plot.md`.
 
 ## 0. Offline reward-signal check (done, $0)
 

@@ -41,8 +41,9 @@ Reward:
 ../automem-vn/.venv/bin/python scripts/export_grpo_data.py --out data/grpo_seed.jsonl
 ../automem-vn/.venv/bin/python scripts/grpo_reward_smoke.py --artifacts results   # verify reward signal ($0)
 ../automem-vn/.venv/bin/python scripts/import_locomo_plus.py --limit 16 --out data/locomo_plus_subset.jsonl --report results/locomo_plus_subset.md --insecure-ssl
-# GPU money plot — DONE (RunPod RTX 3090, ~$0.55): F+C+U 0.80 vs F+C 0.65 memory-call
-# rate at equal accuracy. See docs/GRPO_MINIRUN.md + results/grpo_money_plot.md
+# GPU money plot — DONE (RunPod A40, ~$0.5): F+C+U trains a memory-spamming policy
+# (0.97 call rate, 0.88 unnecessary on non-memory) vs F+C 0.17/0.00 at equal accuracy.
+# See docs/GRPO_MINIRUN.md + results/grpo_money_plot.md
 # python scripts/train_grpo.py --model Qwen/Qwen2.5-3B-Instruct --out runs/fcu --max-steps 100 --lr 1e-5
 # python scripts/train_grpo.py --model Qwen/Qwen2.5-3B-Instruct --out runs/fc  --max-steps 100 --lr 1e-5 --no-usage-bonus
 ```
@@ -112,7 +113,7 @@ Versioned artifacts:
 - [`results/live_prompted_full40.json`](results/live_prompted_full40.json)
 - [`data/grpo_seed.jsonl`](data/grpo_seed.jsonl)
 - [`results/grpo_reward_smoke.md`](results/grpo_reward_smoke.md)
-- [`results/grpo_money_plot.md`](results/grpo_money_plot.md) (RunPod GRPO: F+C+U 0.80 vs F+C 0.65)
+- [`results/grpo_money_plot.md`](results/grpo_money_plot.md) (RunPod GRPO: F+C+U 0.88 unnecessary calls vs F+C 0.00)
 - [`scripts/train_grpo.py`](scripts/train_grpo.py) (LoRA GRPO) · [`scripts/eval_grpo.py`](scripts/eval_grpo.py)
 - [`docs/GRPO_MINIRUN.md`](docs/GRPO_MINIRUN.md)
 - [`data/locomo_plus_subset.jsonl`](data/locomo_plus_subset.jsonl)
