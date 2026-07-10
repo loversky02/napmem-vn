@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from napmem.grpo import _completion_text
+from napmem.grpo import parse_json_payload
 from napmem.prompted import answer_correct
 
 
@@ -26,12 +26,8 @@ def load_seed_rows(path: Path) -> list[dict]:
 
 def parse_completion(text: str) -> tuple[str | None, bool, bool]:
     """Return (answer, has_tool_call, is_malformed) from a raw completion string."""
-    raw = _completion_text(text)
-    try:
-        payload = json.loads(raw) if isinstance(raw, str) else raw
-    except (json.JSONDecodeError, TypeError):
-        return None, False, True
-    if not isinstance(payload, dict) or "answer" not in payload:
+    payload = parse_json_payload(text)
+    if payload is None or "answer" not in payload:
         return None, False, True
     tool_calls = payload.get("tool_calls") or []
     has_tool = isinstance(tool_calls, list) and len(tool_calls) > 0
@@ -45,7 +41,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--seed", type=Path, default=Path("data/grpo_seed.jsonl"))
     parser.add_argument("--label", default="model")
     parser.add_argument("--out", type=Path, default=None)
-    parser.add_argument("--max-new-tokens", type=int, default=200)
+    parser.add_argument("--max-new-tokens", type=int, default=128)
+    parser.add_argument("--limit", type=int, default=0, help="evaluate only the first N rows (0 = all)")
     return parser.parse_args(argv)
 
 
@@ -64,6 +61,8 @@ def main(argv: list[str] | None = None) -> None:
     model.eval()
 
     rows = load_seed_rows(args.seed)
+    if args.limit:
+        rows = rows[: args.limit]
     samples = []
     for row in rows:
         messages = [{"role": "user", "content": row["prompt"]}]

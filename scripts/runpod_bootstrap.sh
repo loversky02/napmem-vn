@@ -19,12 +19,12 @@ echo "=== [2/6] offline reward smoke ($0 sanity) ==="
 $PY scripts/grpo_reward_smoke.py --artifacts results || { echo "REWARD_SMOKE_FAILED"; exit 1; }
 
 echo "=== [3/6] GPU smoke: 3 GRPO steps (catches OOM / API drift cheaply) ==="
-$PY scripts/train_grpo.py --model "$MODEL" --out runs/smoke --max-steps 3 --group-size 4 || { echo "GPU_SMOKE_FAILED"; exit 1; }
+$PY scripts/train_grpo.py --model "$MODEL" --out runs/smoke --max-steps 3 --group-size 4 --max-completion-length 96 || { echo "GPU_SMOKE_FAILED"; exit 1; }
 echo "SMOKE_OK"
 
 echo "=== [4/6] train FCU (F+C+U) and FC (F+C ablation) ==="
-$PY scripts/train_grpo.py --model "$MODEL" --out runs/fcu --max-steps "$STEPS" --group-size 4 || { echo "TRAIN_FCU_FAILED"; exit 1; }
-$PY scripts/train_grpo.py --model "$MODEL" --out runs/fc  --max-steps "$STEPS" --group-size 4 --no-usage-bonus || { echo "TRAIN_FC_FAILED"; exit 1; }
+$PY scripts/train_grpo.py --model "$MODEL" --out runs/fcu --max-steps "$STEPS" --group-size 4 --max-completion-length 96 || { echo "TRAIN_FCU_FAILED"; exit 1; }
+$PY scripts/train_grpo.py --model "$MODEL" --out runs/fc  --max-steps "$STEPS" --group-size 4 --max-completion-length 96 --no-usage-bonus || { echo "TRAIN_FC_FAILED"; exit 1; }
 
 echo "=== [5/6] eval base + both checkpoints ==="
 $PY scripts/eval_grpo.py --base "$MODEL" --label base --out results/grpo_eval_base.json || echo "EVAL_BASE_FAILED"

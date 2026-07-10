@@ -3,6 +3,7 @@ import json
 from napmem.grpo import (
     build_grpo_rows,
     make_grpo_reward_fn,
+    parse_json_payload,
     reward_candidate,
     score_completion,
     write_grpo_jsonl,
@@ -56,6 +57,33 @@ def test_score_completion_reward_variants():
     # chat-list completion is reduced to its final content
     chat = [{"role": "assistant", "content": good}]
     assert score_completion(chat, "BWP-", "exact_string", use_usage_bonus=True) == 1.0
+
+
+def test_parse_json_payload_tolerates_prose_and_fences():
+    # clean JSON
+    assert parse_json_payload('{"answer":"x","tool_calls":[]}')["answer"] == "x"
+    # JSON wrapped in prose / markdown fence + trailing text
+    wrapped = 'Sure! ```json\n{"answer":"Tampa beach","tool_calls":[{"tool":"search_records"}]}\n``` done'
+    payload = parse_json_payload(wrapped)
+    assert payload["answer"] == "Tampa beach"
+    assert payload["tool_calls"]
+    # no JSON at all
+    assert parse_json_payload("no json here") is None
+
+
+def test_grpo_rows_put_evidence_in_memory_prompts(tmp_path):
+    bench = build_synthetic_benchmark(tmp_path / "mem")
+    rows = {row.qid: row for row in build_grpo_rows(bench)}
+
+    # a record-layer memory question carries its supporting evidence text
+    mem_row = rows["q_record_instruction"]
+    assert "Memory evidence:" in mem_row.prompt
+    assert mem_row.gold_answer.lower() in mem_row.prompt.lower()
+
+    # a non-memory question is flagged as needing no memory (no evidence block)
+    non_row = rows["q_non_memory_math"]
+    assert "needs no memory" in non_row.prompt
+    assert "Memory evidence:" not in non_row.prompt
 
 
 def test_grpo_reward_fn_flags_tool_spam():
