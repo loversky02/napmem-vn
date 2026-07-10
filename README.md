@@ -1,10 +1,49 @@
 # NapMem-VN
 
-Mac-first reproduction lane for **From Passive Retrieval to Active Memory Navigation: Learning to Use Memory as a Structured Action Space** ([arXiv:2607.05794](https://arxiv.org/abs/2607.05794)).
+Mac-first, $0-first reproduction of **From Passive Retrieval to Active Memory
+Navigation: Learning to Use Memory as a Structured Action Space**
+([arXiv:2607.05794](https://arxiv.org/abs/2607.05794), no official code).
 
-NapMem turns long-term user memory from passive top-k retrieval into an agent action space. This repo starts with the $0 substrate: a four-layer memory pyramid, the five paper tools, and the reward rubric needed to test navigation and reward-hacking ablations before any GPU GRPO run.
+NapMem turns long-term user memory from passive top-k retrieval into an **agent
+action space**: a four-layer memory pyramid the agent learns to *navigate* with
+tools, trained by GRPO. This repo reproduces the substrate and the navigation
+policy, and — the headline — runs an **honest audit of the paper's reward**.
 
-## What Is Implemented
+Everything runs offline on Apple Silicon; only the final GRPO run needs a GPU.
+
+## Headline results
+
+**1. Active navigation beats flat retrieval — and a learned policy makes it cheap.**
+AutoMem's learned WRITE trace is bridged into the NapMem pyramid (see
+[Portfolio role](#portfolio-role)); three read policies over the *same* memory:
+
+| read policy | recall | avg tool calls |
+|---|---:|---:|
+| passive top-k over records (Mem0-style) | 0.60 | 0.8 |
+| scripted active_nav (read every layer) | 1.00 | 8.0 |
+| prompted navigator (9router) | 1.00 | **1.4** |
+
+The recall gap is entirely evidence *above* the record layer (a consolidated topic
+track + the profile index) that flat retrieval cannot reach; the learned policy
+recovers it at ~1/6 the calls.
+
+**2. The paper's usage-bonus reward trains a memory-spamming policy (reward hacking).**
+GRPO on `Qwen2.5-3B-Instruct` + LoRA, paper reward **F+C+U** vs the **F+C** ablation
+(RunPod A40, ~$0.5, [`results/grpo_money_plot.md`](results/grpo_money_plot.md)):
+
+| checkpoint | accuracy | memory-call rate | unnecessary (non-memory) |
+|---|---:|---:|---:|
+| base | 0.85 | 0.15 | 0.00 |
+| **F+C+U** | 0.88 | **0.97** | **0.88** |
+| **F+C** | 0.88 | 0.17 | 0.00 |
+
+U trains the policy to call memory on 97% of questions — 88% of *non-memory*
+questions unnecessarily — at no accuracy gain (sampled eval n=8 agrees: 0.78 vs
+0.00). This was predicted first, offline and free, by the reward smoke
+([`results/grpo_reward_smoke.md`](results/grpo_reward_smoke.md): a tool-spamming
+policy scores 1.00 under F+C+U vs the ideal policy's 0.80).
+
+## Substrate
 
 | Layer | Local representation |
 |---|---|
@@ -13,129 +52,68 @@ NapMem turns long-term user memory from passive top-k retrieval into an agent ac
 | L3 topic tracks | Markdown files with evidence links |
 | L4 user profile | `profile.md` |
 
-Five tools:
-
-- `search_records(query)`
-- `search_conversations(query)`
-- `get_records(record_ids)`
-- `get_conversation(message_ids)`
-- `read_file(name)`
-
-Reward:
-
-- paper `F + C + U` terminal reward
-- `use_usage_bonus=False` ablation to test whether the usage term teaches useful navigation or tool spam
+Five paper tools: `search_records`, `search_conversations`, `get_records`,
+`get_conversation`, `read_file`. Terminal reward `F + C + U` (format, correctness,
+usage) with a `use_usage_bonus=False` ablation to test whether the usage term
+teaches useful navigation or tool spam.
 
 ## Quickstart
 
 ```bash
-../automem-vn/.venv/bin/python -m pytest -q
-../automem-vn/.venv/bin/python scripts/run_synthetic.py
-../automem-vn/.venv/bin/python scripts/run_synthetic.py --ablation
-../automem-vn/.venv/bin/python scripts/run_synthetic.py --ablation --artifacts results
-../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --limit 8 --insecure-ssl --live-timeout 35
-../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_non_memory_math,q_non_memory_capital
-../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_topic_state,q_profile_nate,q_non_memory_math,q_non_memory_capital,q_non_memory_water,q_non_memory_week --artifacts results --live-artifact-stem live_prompted_mixed8
-../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --qids q_raw_nate,q_record_nate,q_topic_state,q_profile_nate,q_raw_allergy,q_record_mira,q_topic_linh,q_profile_style,q_non_memory_math,q_non_memory_capital,q_non_memory_water,q_non_memory_week,q_non_memory_color,q_non_memory_planet,q_non_memory_square,q_non_memory_author --artifacts results --live-artifact-stem live_prompted_mixed16
-../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --live-timeout 35 --artifacts results --live-artifact-stem live_prompted_full40
+# offline, $0 (shared venv from ../automem-vn)
+../automem-vn/.venv/bin/python -m pytest -q                              # 27 tests
+../automem-vn/.venv/bin/python scripts/run_synthetic.py --ablation       # strategy + U-term ablation
+../automem-vn/.venv/bin/python scripts/grpo_reward_smoke.py --artifacts results   # reward-signal audit
 ../automem-vn/.venv/bin/python scripts/export_grpo_data.py --out data/grpo_seed.jsonl
-../automem-vn/.venv/bin/python scripts/grpo_reward_smoke.py --artifacts results   # verify reward signal ($0)
-../automem-vn/.venv/bin/python scripts/import_locomo_plus.py --limit 16 --out data/locomo_plus_subset.jsonl --report results/locomo_plus_subset.md --insecure-ssl
-# GPU money plot — DONE (RunPod A40, ~$0.5): F+C+U trains a memory-spamming policy
-# (0.97 call rate, 0.88 unnecessary on non-memory) vs F+C 0.17/0.00 at equal accuracy.
-# See docs/GRPO_MINIRUN.md + results/grpo_money_plot.md
-# python scripts/train_grpo.py --model Qwen/Qwen2.5-3B-Instruct --out runs/fcu --max-steps 100 --lr 1e-5
-# python scripts/train_grpo.py --model Qwen/Qwen2.5-3B-Instruct --out runs/fc  --max-steps 100 --lr 1e-5 --no-usage-bonus
+
+# prompted navigation over 9router (OpenAI-compatible endpoint via .env)
+../automem-vn/.venv/bin/python scripts/run_synthetic.py --live --insecure-ssl --artifacts results
+
+# GPU money plot (RunPod, see docs/GRPO_MINIRUN.md) — end to end on a fresh pod:
+# MODEL=Qwen/Qwen2.5-3B-Instruct STEPS=100 LR=1e-5 NS=8 bash scripts/runpod_bootstrap.sh
 ```
 
-Current 40-case synthetic result:
+## Results in detail
 
-| strategy | acc | memory acc | exact fail | calls |
-|---|---:|---:|---:|---:|
-| no_memory | 0.20 | 0.00 | 0.68 | 0.00 |
-| passive_topk | 0.40 | 0.25 | 0.47 | 1.00 |
-| records_only | 0.40 | 0.25 | 0.47 | 2.00 |
-| upper_first | 0.60 | 0.50 | 0.40 | 9.00 |
-| drilldown | 0.70 | 0.62 | 0.20 | 4.12 |
-| oracle | 1.00 | 1.00 | 0.00 | 0.80 |
+**Synthetic navigation ($0).** A balanced 40-case suite with evidence at every
+layer plus non-memory controls, comparing scripted read strategies. Active
+multi-level navigation (`drilldown`) recovers exact evidence that flat retrieval
+misses (0.70 vs 0.40 accuracy) and the `oracle` upper bound hits 1.00 at 0.80
+calls. Full table: [`results/offline_synthetic.md`](results/offline_synthetic.md).
 
-This is intentionally tiny: it verifies that active navigation can recover evidence
-from raw messages, records, topic tracks, and profile before we spend tokens or GPU.
-It also includes non-memory controls, where unnecessary memory calls should be zero.
+**Prompted navigation (9router).** With first-tool routing and exact-layer
+discipline, the prompted navigator reaches 0.88–1.00 accuracy at ~1.5 tool calls
+and makes **zero** unnecessary memory calls on non-memory questions
+(`live_prompted_*` artifacts).
 
-Current 9router prompted smoke using the existing workspace endpoint on the first
-8 examples:
+**The usage term U is misspecified** ([`docs/FINDING_USAGE_BONUS.md`](docs/FINDING_USAGE_BONUS.md)).
+Offline over the GRPO seed, a tool-spamming policy scores **1.00** under F+C+U
+while the ideal policy (which correctly skips memory on non-memory questions)
+scores **0.80** — the reward literally prefers spam. Training confirms it: see the
+[headline money plot](#headline-results).
 
-| split | result |
-|---|---:|
-| accuracy | 0.88 |
-| avg calls | 1.50 |
-| unnecessary memory calls | 0.00 |
-| exact fail | 0.00 |
-| quote fail | 0.00 |
-| provider error rate | 0.00 |
+## Artifacts
 
-The first live smoke failed by generalizing exact evidence. After scaling to 40,
-the next limited smoke showed a routing/layer failure. The current prompt fixes
-that with explicit first-tool routing and exact layer discipline: record-shaped
-questions answer from record text, raw-shaped questions from raw text, profile
-questions from `profile.md`, and topic questions from topic files. The live
-runner also reports backend errors per example and summarizes `R+U` vs `F+C`
-reward so prompted trajectories can be used in the U-term ablation.
+- Navigation: [`results/offline_synthetic.md`](results/offline_synthetic.md) · live prompted [`mixed8`](results/live_prompted_mixed8.md) / [`mixed16`](results/live_prompted_mixed16.md) / [`full40`](results/live_prompted_full40.md)
+- Reward audit: [`results/grpo_reward_smoke.md`](results/grpo_reward_smoke.md) · [`docs/FINDING_USAGE_BONUS.md`](docs/FINDING_USAGE_BONUS.md)
+- GRPO money plot: [`results/grpo_money_plot.md`](results/grpo_money_plot.md) · [`scripts/train_grpo.py`](scripts/train_grpo.py) · [`scripts/eval_grpo.py`](scripts/eval_grpo.py) · [`docs/GRPO_MINIRUN.md`](docs/GRPO_MINIRUN.md) · [`data/grpo_seed.jsonl`](data/grpo_seed.jsonl)
+- AutoMem→NapMem bridge (in the [automem-vn](https://github.com/loversky02/automem-vn) repo): [`napmem_bridge_compare.md`](https://github.com/loversky02/automem-vn/blob/main/results/napmem_bridge_compare.md) · [`napmem_bridge_prompted.md`](https://github.com/loversky02/automem-vn/blob/main/results/napmem_bridge_prompted.md)
+- Benchmark subsets: [`docs/BENCHMARK_SUBSETS.md`](docs/BENCHMARK_SUBSETS.md) · [`results/locomo_plus_subset.md`](results/locomo_plus_subset.md)
 
-On a mixed prompted batch with two memory and two non-memory questions, the
-navigator answered all four correctly and skipped memory for both non-memory
-items, but the paper-style `R+U` score dropped to 0.50 while `F+C` stayed 1.00.
-That is the cleanest local evidence so far that U must be ablated.
+## Portfolio role
 
-The larger mixed8 prompted batch repeats the same pattern: accuracy 1.00,
-unnecessary memory calls 0.00, `R+U=0.50`, `F+C=1.00`.
+The independent NapMem repro, paired with sibling projects around one memory theme:
 
-The mixed16 batch repeats it again across 8 memory and 8 non-memory examples:
-accuracy 1.00, unnecessary memory calls 0.00, provider error rate 0.00,
-`R+U=0.50`, `F+C=1.00`.
+- **AutoMem-VN READ half (Track B — done):** [AutoMem-VN](https://github.com/loversky02/automem-vn)
+  learns the memory **WRITE**; NapMem learns the **READ**. AutoMem's WRITE trace is bridged
+  into this pyramid and read back by the three policies in headline result #1 —
+  passive top-k (0.60) < active nav (1.00 @ 8 calls) < prompted (1.00 @ 1.4 calls).
+- **super-agent axis:** `memory-granularity` as a fourth routing axis beside
+  `model × depth × skill-plan`.
+- **HOLA comparison:** external textual memory/tool navigation vs exact cache-style
+  memory ([HOLA](https://github.com/loversky02/hola)).
 
-The full 40-case live artifact keeps the finding at paper-repro scale for this
-synthetic suite: accuracy 0.97, unnecessary memory calls 0.00, provider error
-rate 0.00, `R+U=0.76`, `F+C=0.95`.
+---
 
-Versioned artifacts:
-
-- [`results/offline_synthetic.md`](results/offline_synthetic.md)
-- [`results/offline_synthetic.json`](results/offline_synthetic.json)
-- [`results/live_prompted_mixed.md`](results/live_prompted_mixed.md)
-- [`results/live_prompted_mixed.json`](results/live_prompted_mixed.json)
-- [`results/live_prompted_mixed8.md`](results/live_prompted_mixed8.md)
-- [`results/live_prompted_mixed8.json`](results/live_prompted_mixed8.json)
-- [`results/live_prompted_mixed16.md`](results/live_prompted_mixed16.md)
-- [`results/live_prompted_mixed16.json`](results/live_prompted_mixed16.json)
-- [`results/live_prompted_full40.md`](results/live_prompted_full40.md)
-- [`results/live_prompted_full40.json`](results/live_prompted_full40.json)
-- [`data/grpo_seed.jsonl`](data/grpo_seed.jsonl)
-- [`results/grpo_reward_smoke.md`](results/grpo_reward_smoke.md)
-- [`results/grpo_money_plot.md`](results/grpo_money_plot.md) (RunPod GRPO: F+C+U 0.88 unnecessary calls vs F+C 0.00)
-- [`scripts/train_grpo.py`](scripts/train_grpo.py) (LoRA GRPO) · [`scripts/eval_grpo.py`](scripts/eval_grpo.py)
-- [`docs/GRPO_MINIRUN.md`](docs/GRPO_MINIRUN.md)
-- [`data/locomo_plus_subset.jsonl`](data/locomo_plus_subset.jsonl)
-- [`results/locomo_plus_subset.md`](results/locomo_plus_subset.md)
-- [`docs/BENCHMARK_SUBSETS.md`](docs/BENCHMARK_SUBSETS.md)
-- [`docs/FINDING_USAGE_BONUS.md`](docs/FINDING_USAGE_BONUS.md)
-
-## Portfolio Role
-
-This is the independent NapMem repro. The same substrate should also be used as:
-
-- **AutoMem-VN READ half (Track B — done):** AutoMem's learned WRITE trace is
-  bridged into this pyramid and read back by NapMem navigation. Three read policies
-  over the same bridged trace: passive top-k over records (Mem0-style) **0.60** recall
-  @ 0.8 calls; scripted active_nav (read every layer) **1.00** @ 8 calls; the prompted
-  navigator (9router) **1.00** @ **1.4** calls — same recall, ~1/6 the calls, and 0
-  calls on the non-memory question. The recall gap is entirely evidence that sits
-  above the record layer (a consolidated topic track and the profile index); the
-  learned policy is what makes the hierarchy efficient. See
-  [`../automem-vn/results/napmem_bridge_compare.md`](../automem-vn/results/napmem_bridge_compare.md)
-  ($0) and
-  [`../automem-vn/results/napmem_bridge_prompted.md`](../automem-vn/results/napmem_bridge_prompted.md)
-  (9router). Next: GRPO to train the policy.
-- super-agent axis: add `memory-granularity` beside `model × depth × skill-plan`.
-- HOLA comparison: external textual memory/tool navigation versus exact cache-style memory.
+$0 / Apple-Silicon substrate; only the GRPO money plot needs a GPU (~$0.5 on a
+rented A40). Not affiliated with the paper's authors.
