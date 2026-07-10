@@ -43,6 +43,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--out", type=Path, default=None)
     parser.add_argument("--max-new-tokens", type=int, default=128)
     parser.add_argument("--limit", type=int, default=0, help="evaluate only the first N rows (0 = all)")
+    parser.add_argument("--sample", action="store_true", help="sample instead of greedy decoding")
+    parser.add_argument("--n-samples", type=int, default=1, help="samples per question (probabilistic rates)")
+    parser.add_argument("--temperature", type=float, default=0.8)
     return parser.parse_args(argv)
 
 
@@ -63,26 +66,40 @@ def main(argv: list[str] | None = None) -> None:
     rows = load_seed_rows(args.seed)
     if args.limit:
         rows = rows[: args.limit]
+
+    do_sample = args.sample or args.n_samples > 1
+    k = max(1, args.n_samples)
+    gen_kwargs = {"max_new_tokens": args.max_new_tokens, "num_return_sequences": k}
+    if do_sample:
+        gen_kwargs.update(do_sample=True, temperature=args.temperature, top_p=0.95)
+    else:
+        gen_kwargs.update(do_sample=False)
+
     samples = []
     for row in rows:
         messages = [{"role": "user", "content": row["prompt"]}]
         prompt_text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
         with torch.no_grad():
-            out = model.generate(**inputs, max_new_tokens=args.max_new_tokens, do_sample=False)
-        completion = tokenizer.decode(out[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+            out = model.generate(**inputs, **gen_kwargs)
+        completions = tokenizer.batch_decode(out[:, inputs["input_ids"].shape[1]:], skip_special_tokens=True)
 
-        answer, has_tool, malformed = parse_completion(completion)
-        correct = (not malformed) and answer_correct(answer or "", row["gold_answer"], row["answer_mode"])
+        # Per-question rates, averaged over the k samples (probabilistic when sampling).
+        n_correct = n_tool = n_bad = 0
+        for completion in completions:
+            answer, has_tool, malformed = parse_completion(completion)
+            n_tool += int(has_tool)
+            n_bad += int(malformed)
+            n_correct += int((not malformed) and answer_correct(answer or "", row["gold_answer"], row["answer_mode"]))
+        m = len(completions) or 1
         samples.append({
             "qid": row["qid"],
             "requires_memory": bool(row["requires_memory"]),
             "support_layer": row["support_layer"],
-            "answer": answer,
-            "has_tool": has_tool,
-            "malformed": malformed,
-            "correct": bool(correct),
-            "completion": completion[:400],
+            "has_tool": n_tool / m,
+            "malformed": n_bad / m,
+            "correct": n_correct / m,
+            "completion": completions[0][:400],
         })
 
     n = len(samples) or 1

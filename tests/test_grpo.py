@@ -17,7 +17,7 @@ def test_grpo_rows_cover_synthetic_benchmark(tmp_path):
 
     assert len(rows) == 40
     assert any(not row.requires_memory for row in rows)
-    assert "skip memory" in next(row.prompt for row in rows if not row.requires_memory)
+    assert "tool_calls" in next(row.prompt for row in rows if not row.requires_memory)
 
 
 def test_grpo_reward_exposes_usage_bonus_penalty(tmp_path):
@@ -80,10 +80,12 @@ def test_grpo_rows_put_evidence_in_memory_prompts(tmp_path):
     assert "Memory evidence:" in mem_row.prompt
     assert mem_row.gold_answer.lower() in mem_row.prompt.lower()
 
-    # a non-memory question is flagged as needing no memory (no evidence block)
+    # a non-memory question is shown plainly: no evidence block and no skip hint,
+    # so the tool-call decision is left to the policy
     non_row = rows["q_non_memory_math"]
-    assert "needs no memory" in non_row.prompt
     assert "Memory evidence:" not in non_row.prompt
+    assert "no memory" not in non_row.prompt.lower()
+    assert non_row.prompt.rstrip().endswith("JSON:")
 
 
 def test_grpo_reward_fn_flags_tool_spam():

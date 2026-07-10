@@ -26,15 +26,15 @@ class GRPORow:
 def grpo_system_prompt() -> str:
     # Single-turn GRPO: the supporting evidence (if any) is given in the prompt so
     # the answer is achievable in one pass. The only free behaviour is whether the
-    # policy declares a memory tool call. `tool_calls` should list the memory tools
-    # the question needed, and be an empty list to skip memory for non-memory
-    # questions. This isolates the usage term U as the learnable behaviour.
+    # policy declares a memory tool call. The instruction is deliberately NEUTRAL
+    # about *when* to call memory — it only describes the output format — so the
+    # tool-call decision is driven purely by the reward, isolating the usage term U
+    # (including whether U teaches unnecessary calls on non-memory questions).
     return (
-        "Answer the user's question using the provided memory evidence. "
+        "Answer the user's question. "
         "Output ONLY one compact JSON object on a single line and nothing else:\n"
         '{"answer": "<answer>", "tool_calls": [{"tool": "search_records"}]}\n'
-        "Put the memory tools the question needed in tool_calls. "
-        "Use an empty list \"tool_calls\": [] to skip memory for non-memory questions."
+        'tool_calls lists the memory tools you used; use an empty list [] if you used none.'
     )
 
 
@@ -56,11 +56,13 @@ def _evidence_for(example: QAExample, bench: SyntheticBenchmark) -> str:
 
 
 def build_grpo_row(example: QAExample, evidence: str = "") -> GRPORow:
+    # Memory questions carry their supporting evidence so a correct answer is
+    # reachable in one pass. Non-memory questions are shown plainly, with NO hint
+    # that they need no memory — the policy must decide whether to call a tool, so
+    # the usage term U can (or cannot) teach unnecessary calls here.
     lines = [grpo_system_prompt(), f"Question: {example.question}"]
     if example.requires_memory and evidence:
         lines.append(f"Memory evidence:\n{evidence}")
-    else:
-        lines.append("This is a general-knowledge question; it needs no memory.")
     lines.append("JSON:")
     return GRPORow(
         qid=example.qid,
