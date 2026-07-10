@@ -1,0 +1,32 @@
+{
+  "model": "Qwen/Qwen2.5-3B-Instruct",
+  "steps": "30",
+  "base": {
+    "label": "base",
+    "n": 40,
+    "accuracy": 0.85,
+    "memory_recall": 0.84375,
+    "malformed_rate": 0.0,
+    "memory_call_rate": 0.625,
+    "unnecessary_memory_call_rate": 0.0
+  },
+  "fcu": {
+    "label": "fcu",
+    "n": 40,
+    "accuracy": 0.85,
+    "memory_recall": 0.84375,
+    "malformed_rate": 0.0,
+    "memory_call_rate": 0.6,
+    "unnecessary_memory_call_rate": 0.0
+  },
+  "fc": {
+    "label": "fc",
+    "n": 40,
+    "accuracy": 0.85,
+    "memory_recall": 0.84375,
+    "malformed_rate": 0.0,
+    "memory_call_rate": 0.6,
+    "unnecessary_memory_call_rate": 0.0
+  },
+  "delta_unnecessary_fcu_minus_fc": 0.0
+}

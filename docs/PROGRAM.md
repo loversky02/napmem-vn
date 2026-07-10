@@ -29,7 +29,7 @@ Core move: build a four-layer memory pyramid and train the agent with GRPO to ch
 | C. super-agent axis | route `memory-granularity` with model/depth/skill-plan | add memory axis policy and mock benchmark |
 | D. HOLA story | compare text/tool memory vs exact cache memory | write cross-memory note and shared figure |
 | E. Honest finding | test whether U usage bonus causes tool spam | reward ablation: `F+C+U` vs `F+C` |
-| F. GPU money plot | no-RL prompted navigation vs GRPO navigation — **reward signal verified offline + launch-ready** (`scripts/grpo_reward_smoke.py`, `scripts/train_grpo.py`, `docs/GRPO_MINIRUN.md`); only the paid GPU run is left | Qwen3-4B LoRA on RunPod |
+| F. GPU money plot | **DONE** (RunPod RTX 3090, ~$0.55): F+C+U trains 0.80 memory-call rate vs F+C 0.65 at equal accuracy 0.85 — U inflates tool-calling in a real trained model, as the offline smoke predicted | `results/grpo_money_plot.md` (Qwen2.5-3B-Instruct LoRA) |
 
 ## Current Offline Smoke
 
@@ -128,10 +128,13 @@ requests, so the runner now has `--live-timeout` and prints per-example errors.
    `../automem-vn/results/napmem_bridge_compare.md`, flat 0.60 vs active 1.00) +
    prompted navigation (9router, `../automem-vn/results/napmem_bridge_prompted.md`,
    1.00 recall @ 1.4 calls vs scripted 8).
-5. GRPO reward signal verified offline ($0, `results/grpo_reward_smoke.md`):
-   tool_spam 1.00 > oracle 0.80 under F+C+U → the run should show F+C+U inflates
-   unnecessary calls. `scripts/train_grpo.py` + `docs/GRPO_MINIRUN.md` are
-   launch-ready; only the paid RunPod run (Qwen3-4B, 2 checkpoints) remains.
+5. GRPO money plot DONE (RunPod RTX 3090, ~$0.55, `results/grpo_money_plot.md`):
+   F+C+U trains a 0.80 memory-call rate vs F+C's 0.65 at equal accuracy 0.85 — the
+   usage term U inflates tool-calling in a real trained model, confirming the
+   offline smoke (tool_spam 1.00 > oracle 0.80). Single-turn evidence-in-prompt so
+   correctness is reachable and tool_calls is the learnable behaviour. Future: more
+   steps / larger model / sampled eval to surface the effect on the non-memory
+   subset too (held at 0 here by the explicit non-memory instruction).
 
 ## Open Risks
 

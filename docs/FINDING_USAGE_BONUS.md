@@ -58,9 +58,26 @@ reward literally prefers a memory-spamming policy. This predicts that GRPO train
 with F+C+U will have a higher unnecessary memory-call rate than F+C — the money
 plot in `docs/GRPO_MINIRUN.md`.
 
+## Confirmed on a trained model (RunPod, GRPO)
+
+The offline prediction holds after actually training. Same base
+(`Qwen/Qwen2.5-3B-Instruct` + LoRA), 100 GRPO steps, once with F+C+U and once with
+F+C (`results/grpo_money_plot.md`, RTX 3090, ~$0.55):
+
+| checkpoint | accuracy | memory-call rate |
+|---|---:|---:|
+| F+C+U | 0.85 | **0.80** |
+| F+C   | 0.85 | **0.65** |
+
+The usage term trains the policy to call memory **15 points more** at identical
+accuracy — U buys tool-calling, not capability. (A 30-step / lr 1e-6 pass moved
+nothing; the effect needed 100 steps / lr 1e-5. The non-memory subset stayed at 0
+unnecessary calls for both, held by the explicit "needs no memory" instruction.)
+
 ## Interpretation
 
 The usage bonus can improve exploration, but it should be an ablation axis rather
 than a default claim. In this local repro, `U` rewards memory-calling baselines
-even when they call memory unnecessarily, and it penalizes correct policies that
-skip memory for non-memory examples.
+even when they call memory unnecessarily, penalizes correct policies that skip
+memory for non-memory examples, and — once trained with GRPO — measurably inflates
+how often the policy calls memory.

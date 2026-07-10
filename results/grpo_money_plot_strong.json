@@ -1,0 +1,20 @@
+{
+  "fcu2": {
+    "label": "fcu2",
+    "n": 40,
+    "accuracy": 0.85,
+    "memory_recall": 0.84375,
+    "malformed_rate": 0.0,
+    "memory_call_rate": 0.8,
+    "unnecessary_memory_call_rate": 0.0
+  },
+  "fc2": {
+    "label": "fc2",
+    "n": 40,
+    "accuracy": 0.85,
+    "memory_recall": 0.84375,
+    "malformed_rate": 0.0,
+    "memory_call_rate": 0.65,
+    "unnecessary_memory_call_rate": 0.0
+  }
+}

@@ -2,9 +2,23 @@
 
 Train the NapMem navigation policy with GRPO and show what the reward does. We
 train the *same* base model twice — once with the paper reward **F+C+U** and once
-with the **F+C** ablation — and compare unnecessary memory-call rate. Everything
-up to the GPU boundary is built and verified offline; only `train_grpo.py` needs a
-pod.
+with the **F+C** ablation — and compare memory-call rate. Everything up to the GPU
+boundary is built and verified offline; only `train_grpo.py` needs a pod.
+
+## Result (done — RunPod RTX 3090, ~$0.55, `results/grpo_money_plot.md`)
+
+`Qwen/Qwen2.5-3B-Instruct` + LoRA, 100 GRPO steps, lr 1e-5, single-turn with
+evidence-in-prompt:
+
+| checkpoint | accuracy | memory recall | memory-call rate |
+|---|---:|---:|---:|
+| F+C+U | 0.85 | 0.84 | **0.80** |
+| F+C   | 0.85 | 0.84 | **0.65** |
+
+**U trains the policy to call memory 15 points more (0.80 vs 0.65) at identical
+accuracy**, confirming the offline prediction in a real trained model. (A first
+pass at 30 steps / lr 1e-6 gave a zero delta — too small an update; the effect
+appeared at 100 steps / lr 1e-5.) Full write-up + caveats: `results/grpo_money_plot.md`.
 
 ## 0. Offline reward-signal check (done, $0)
 
