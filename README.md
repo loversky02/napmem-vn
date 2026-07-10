@@ -116,6 +116,13 @@ Versioned artifacts:
 
 This is the independent NapMem repro. The same substrate should also be used as:
 
-- AutoMem-VN READ half: pair active navigation with AutoMem's learned WRITE/consolidate skill.
+- **AutoMem-VN READ half (Track B — done, $0):** AutoMem's learned WRITE trace is
+  bridged into this pyramid and read back by NapMem navigation. Passive top-k over
+  records (Mem0-style) scores **0.60**; active layered navigation **1.00**. The gap
+  is entirely on questions whose evidence sits above the record layer (a consolidated
+  topic track and the profile index). See
+  [`../automem-vn/results/napmem_bridge_compare.md`](../automem-vn/results/napmem_bridge_compare.md)
+  (`../automem-vn/experiments/run_napmem_bridge_compare.py`). Next: the prompted
+  navigator over bridged traces for an efficient (low-call) column, then GRPO.
 - super-agent axis: add `memory-granularity` beside `model × depth × skill-plan`.
 - HOLA comparison: external textual memory/tool navigation versus exact cache-style memory.
