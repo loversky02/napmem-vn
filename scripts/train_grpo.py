@@ -36,8 +36,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--max-steps", type=int, default=60)
     parser.add_argument("--group-size", type=int, default=4, help="GRPO generations per prompt")
     parser.add_argument("--lr", type=float, default=1e-6)
-    parser.add_argument("--max-prompt-length", type=int, default=1024)
-    parser.add_argument("--max-completion-length", type=int, default=256)
+    parser.add_argument("--max-prompt-length", type=int, default=768)
+    parser.add_argument("--max-completion-length", type=int, default=200)
+    parser.add_argument("--no-lora", action="store_true", help="full fine-tune instead of LoRA (needs a big GPU)")
+    parser.add_argument("--lora-r", type=int, default=16)
+    parser.add_argument("--lora-alpha", type=int, default=32)
     parser.add_argument(
         "--no-usage-bonus",
         action="store_true",
@@ -63,6 +66,19 @@ def main(argv: list[str] | None = None) -> None:
 
     reward_fn = make_grpo_reward_fn(use_usage_bonus=not args.no_usage_bonus)
 
+    peft_config = None
+    if not args.no_lora:
+        from peft import LoraConfig
+
+        peft_config = LoraConfig(
+            r=args.lora_r,
+            lora_alpha=args.lora_alpha,
+            lora_dropout=0.05,
+            bias="none",
+            task_type="CAUSAL_LM",
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+        )
+
     config = GRPOConfig(
         output_dir=str(args.out),
         per_device_train_batch_size=args.group_size,
@@ -76,6 +92,7 @@ def main(argv: list[str] | None = None) -> None:
         logging_steps=1,
         save_steps=args.max_steps,
         report_to=[],
+        model_init_kwargs={"torch_dtype": "bfloat16"},
     )
 
     trainer = GRPOTrainer(
@@ -83,6 +100,7 @@ def main(argv: list[str] | None = None) -> None:
         reward_funcs=[reward_fn],
         args=config,
         train_dataset=dataset,
+        peft_config=peft_config,
     )
     trainer.train()
     trainer.save_model(str(args.out))
