@@ -68,9 +68,33 @@ def write_grpo_jsonl(bench: SyntheticBenchmark, path: str | Path) -> Path:
     return out
 
 
-def reward_candidate(candidate: str | dict[str, Any], row: GRPORow, use_usage_bonus: bool = True) -> float:
+def _completion_text(candidate: Any) -> Any:
+    """Normalize a completion to a JSON string or dict.
+
+    TRL hands completions as plain strings (base LM) or as chat message lists
+    ([{"role":..,"content":..}]); reduce both to the final content payload.
+    """
+    if isinstance(candidate, list):
+        if candidate and isinstance(candidate[-1], dict):
+            return candidate[-1].get("content", "")
+        return ""
+    return candidate
+
+
+def score_completion(
+    candidate: Any,
+    gold_answer: str,
+    answer_mode: str = "exact_string",
+    use_usage_bonus: bool = True,
+) -> float:
+    """Terminal reward for one candidate completion.
+
+    A valid candidate is JSON with an `answer` and an optional `tool_calls` list;
+    the reward is the paper's F+C+U (or F+C when `use_usage_bonus=False`).
+    """
+    text = _completion_text(candidate)
     try:
-        payload = json.loads(candidate) if isinstance(candidate, str) else candidate
+        payload = json.loads(text) if isinstance(text, str) else text
     except json.JSONDecodeError:
         return -1.0
     if not isinstance(payload, dict) or "answer" not in payload:
@@ -80,5 +104,27 @@ def reward_candidate(candidate: str | dict[str, Any], row: GRPORow, use_usage_bo
         tool_calls = []
     if not isinstance(tool_calls, list):
         return -1.0
-    correct = answer_correct(str(payload.get("answer", "")), row.gold_answer, row.answer_mode)
+    correct = answer_correct(str(payload.get("answer", "")), gold_answer, answer_mode)
     return napmem_reward(True, correct, bool(tool_calls), use_usage_bonus=use_usage_bonus)
+
+
+def reward_candidate(candidate: str | dict[str, Any], row: GRPORow, use_usage_bonus: bool = True) -> float:
+    return score_completion(candidate, row.gold_answer, row.answer_mode, use_usage_bonus=use_usage_bonus)
+
+
+def make_grpo_reward_fn(use_usage_bonus: bool = True):
+    """Build a TRL-GRPO reward function closing over the U-term choice.
+
+    TRL calls `reward_fn(completions, **columns)` with each dataset column passed
+    as a list aligned with `completions`; the seed JSONL supplies `gold_answer`
+    and `answer_mode`. Returns one float reward per completion.
+    """
+
+    def napmem_grpo_reward(completions, gold_answer, answer_mode, **kwargs):
+        return [
+            score_completion(completion, gold, mode, use_usage_bonus=use_usage_bonus)
+            for completion, gold, mode in zip(completions, gold_answer, answer_mode)
+        ]
+
+    napmem_grpo_reward.__name__ = "napmem_reward_FCU" if use_usage_bonus else "napmem_reward_FC"
+    return napmem_grpo_reward

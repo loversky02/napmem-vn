@@ -17,7 +17,7 @@ Core move: build a four-layer memory pyramid and train the agent with GRPO to ch
 | Search | hybrid keyword + vector RRF, k=60, return top-5 | keyword + RRF placeholder; embedding slot later |
 | Tools | search/get records, search/get conversations, read file | implemented in `MemoryTools` |
 | Inference | max 4 tool-calling turns, stop when evidence sufficient | TODO scripted/prompted navigator |
-| RL | GRPO, Qwen3.5-9B, group 4, lr 1e-6, 5 epochs | TODO RunPod Qwen3-4B/9B small run |
+| RL | GRPO, Qwen3.5-9B, group 4, lr 1e-6, 5 epochs | `scripts/train_grpo.py` (TRL GRPO, Qwen3-4B, group 4); reward fn unit-tested, launch-ready |
 | Reward | binary format/correctness/usage, range -1..1 | implemented with U ablation |
 
 ## Do All Plan
@@ -29,7 +29,7 @@ Core move: build a four-layer memory pyramid and train the agent with GRPO to ch
 | C. super-agent axis | route `memory-granularity` with model/depth/skill-plan | add memory axis policy and mock benchmark |
 | D. HOLA story | compare text/tool memory vs exact cache memory | write cross-memory note and shared figure |
 | E. Honest finding | test whether U usage bonus causes tool spam | reward ablation: `F+C+U` vs `F+C` |
-| F. GPU money plot | no-RL prompted navigation vs GRPO navigation | Qwen3-4B/9B LoRA on RunPod |
+| F. GPU money plot | no-RL prompted navigation vs GRPO navigation — **reward signal verified offline + launch-ready** (`scripts/grpo_reward_smoke.py`, `scripts/train_grpo.py`, `docs/GRPO_MINIRUN.md`); only the paid GPU run is left | Qwen3-4B LoRA on RunPod |
 
 ## Current Offline Smoke
 
@@ -127,7 +127,11 @@ requests, so the runner now has `--live-timeout` and prints per-example errors.
 4. AutoMem bridge READ DONE: passive-vs-active comparison ($0,
    `../automem-vn/results/napmem_bridge_compare.md`, flat 0.60 vs active 1.00) +
    prompted navigation (9router, `../automem-vn/results/napmem_bridge_prompted.md`,
-   1.00 recall @ 1.4 calls vs scripted 8). Next: GRPO to train the policy.
+   1.00 recall @ 1.4 calls vs scripted 8).
+5. GRPO reward signal verified offline ($0, `results/grpo_reward_smoke.md`):
+   tool_spam 1.00 > oracle 0.80 under F+C+U → the run should show F+C+U inflates
+   unnecessary calls. `scripts/train_grpo.py` + `docs/GRPO_MINIRUN.md` are
+   launch-ready; only the paid RunPod run (Qwen3-4B, 2 checkpoints) remains.
 
 ## Open Risks
 

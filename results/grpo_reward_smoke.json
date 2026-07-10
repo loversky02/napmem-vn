@@ -1,0 +1,31 @@
+{
+  "archetypes": {
+    "no_tool": {
+      "FCU_memory": 0.0,
+      "FCU_non_memory": 0.0,
+      "reward_FC": 1.0,
+      "reward_FCU": 0.0
+    },
+    "oracle": {
+      "FCU_memory": 1.0,
+      "FCU_non_memory": 0.0,
+      "reward_FC": 1.0,
+      "reward_FCU": 0.8
+    },
+    "tool_spam": {
+      "FCU_memory": 1.0,
+      "FCU_non_memory": 1.0,
+      "reward_FC": 1.0,
+      "reward_FCU": 1.0
+    },
+    "wrong": {
+      "FCU_memory": -0.5,
+      "FCU_non_memory": -1.0,
+      "reward_FC": -1.0,
+      "reward_FCU": -0.6
+    }
+  },
+  "finding": "The U (usage) term rewards tool calls for their own sake: on non-memory questions the target policy (oracle, no tool) scores 0.00 under F+C+U while tool_spam scores 1.00; the no_tool policy that is always correct still averages 0.00 under F+C+U vs 1.00 under F+C. GRPO under F+C+U is therefore trained to call memory even when it should not.",
+  "n_rows": 40,
+  "name": "grpo-reward-signal-smoke"
+}
