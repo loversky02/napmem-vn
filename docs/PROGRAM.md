@@ -25,7 +25,7 @@ Core move: build a four-layer memory pyramid and train the agent with GRPO to ch
 | Track | Goal | First artifact |
 |---|---|---|
 | A. Independent repro | runnable NapMem pyramid/tools/reward + baseline navigator | this repo |
-| B. AutoMem-VN READ half | combine learned WRITE with learned READ — **passive-vs-active comparison DONE** ($0): flat top-k 0.60 vs active nav 1.00, gap above the record layer | `../automem-vn/experiments/run_napmem_bridge_compare.py` → `../automem-vn/results/napmem_bridge_compare.md` |
+| B. AutoMem-VN READ half | combine learned WRITE with learned READ — **DONE**: flat top-k 0.60@0.8 vs scripted active 1.00@8 vs prompted (9router) 1.00@1.4 calls; gap above the record layer, prompted closes it efficiently | `../automem-vn/experiments/run_prompted_bridge.py` → `../automem-vn/results/napmem_bridge_prompted.md` |
 | C. super-agent axis | route `memory-granularity` with model/depth/skill-plan | add memory axis policy and mock benchmark |
 | D. HOLA story | compare text/tool memory vs exact cache memory | write cross-memory note and shared figure |
 | E. Honest finding | test whether U usage bonus causes tool spam | reward ablation: `F+C+U` vs `F+C` |
@@ -124,10 +124,10 @@ requests, so the runner now has `--live-timeout` and prints per-example errors.
 1. Run full 40-case prompted smoke with `--live-timeout` and collect provider error rate. (done: `results/live_prompted_full40.md`)
 2. Run a larger prompted mixed batch and measure whether any model starts calling memory on non-memory examples to avoid the U penalty. (done: mixed8/mixed16)
 3. Use the scripted + prompted U-term ablations as the first paper-forge honest finding. (done: `docs/FINDING_USAGE_BONUS.md`)
-4. AutoMem bridge passive-vs-active comparison DONE ($0, deterministic):
-   `../automem-vn/results/napmem_bridge_compare.md` (flat top-k 0.60 vs active nav
-   1.00). Next: run the prompted navigator (`napmem.prompted.PromptedNavigator`)
-   over bridged AutoMem traces to add an efficient low-call column, then GRPO.
+4. AutoMem bridge READ DONE: passive-vs-active comparison ($0,
+   `../automem-vn/results/napmem_bridge_compare.md`, flat 0.60 vs active 1.00) +
+   prompted navigation (9router, `../automem-vn/results/napmem_bridge_prompted.md`,
+   1.00 recall @ 1.4 calls vs scripted 8). Next: GRPO to train the policy.
 
 ## Open Risks
 

@@ -116,13 +116,17 @@ Versioned artifacts:
 
 This is the independent NapMem repro. The same substrate should also be used as:
 
-- **AutoMem-VN READ half (Track B — done, $0):** AutoMem's learned WRITE trace is
-  bridged into this pyramid and read back by NapMem navigation. Passive top-k over
-  records (Mem0-style) scores **0.60**; active layered navigation **1.00**. The gap
-  is entirely on questions whose evidence sits above the record layer (a consolidated
-  topic track and the profile index). See
+- **AutoMem-VN READ half (Track B — done):** AutoMem's learned WRITE trace is
+  bridged into this pyramid and read back by NapMem navigation. Three read policies
+  over the same bridged trace: passive top-k over records (Mem0-style) **0.60** recall
+  @ 0.8 calls; scripted active_nav (read every layer) **1.00** @ 8 calls; the prompted
+  navigator (9router) **1.00** @ **1.4** calls — same recall, ~1/6 the calls, and 0
+  calls on the non-memory question. The recall gap is entirely evidence that sits
+  above the record layer (a consolidated topic track and the profile index); the
+  learned policy is what makes the hierarchy efficient. See
   [`../automem-vn/results/napmem_bridge_compare.md`](../automem-vn/results/napmem_bridge_compare.md)
-  (`../automem-vn/experiments/run_napmem_bridge_compare.py`). Next: the prompted
-  navigator over bridged traces for an efficient (low-call) column, then GRPO.
+  ($0) and
+  [`../automem-vn/results/napmem_bridge_prompted.md`](../automem-vn/results/napmem_bridge_prompted.md)
+  (9router). Next: GRPO to train the policy.
 - super-agent axis: add `memory-granularity` beside `model × depth × skill-plan`.
 - HOLA comparison: external textual memory/tool navigation versus exact cache-style memory.
